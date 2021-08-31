@@ -1,4 +1,0 @@
-hello world
-test
-cole
-test 2
