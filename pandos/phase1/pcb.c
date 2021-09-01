@@ -34,15 +34,36 @@ pcb_t *mkEmptyProcQ(){
 
 }
 
-int emptyProcQ(pcb_t *p){
+
+int emptyProcQ(pcb_t *tp){
+    //tp points to tail of queue, if queue is empty then return true
+    if (*tp == null){
+        return TRUE
+    }
+    else{
+        return FALSE
+    }
 
 }
 
-inserProcQ(pcb_t *tp){
+inserProcQ(pcb_t **tp, pcb_t *p){
+    //*tp points to tail, *p is the one being inserted
+    //must store old tail
+    pcb_t *oldTail = *tp;
+    //store head for convenience, head is pcb after tail
+    pcb_t *head = *tp.p_next;
+    //tp points to a tail, want to to point to new tail
+    **tp = *p;
+    //new tail must point to same head
+    *p.next = *head;
+    //new tail must point previously to oldtail
+    *p.p_prev = *oldTail;
+
 
 }
 
 pcb_t *removeProcQ(pcb_t **tp){
+    
 
 }
 
