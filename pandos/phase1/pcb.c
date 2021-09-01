@@ -19,19 +19,43 @@ typedef struct pcb_t{
 } pcb_t;
 
 void freePcb(pcb_t *p){
-
+    if(pcbFree_h == NULL) {
+        pcbFree_h = p;
+        return;
+    }
+    else{
+        p->p_next = pcbFree_h;
+        pcbFree_h = p;
+    }
 }
 
 pcb_t *allocPcb(){
-
+    if(pcbFree_h == NULL){
+        return NULL;
+    }
+    pcb_t temp;
+    temp = pcbFree_h;
+    pcbFree_h = pcbFree_h->p_next;
+    temp->p_child = NULL;
+    temp->p_sib = NULL;
+    temp->p_prevsib = NULL;
+    temp->p_prnt = NULL;
+    temp->p_next = NULL;
+    temp->p_prev = NULL;
+    return temp;
 }
 
 initPcbs(){
-
+    static pcb_t pcbInit[MAXPROC];
+    pcbFree_h = NULL;
+    int i = 0;
+    while(i < MAXPROC){
+        insertProcQ(&pcbFree_h, &pcbInit[i]);
+        i++;
 }
 
 pcb_t *mkEmptyProcQ(){
-
+    return NULL;
 }
 
 
