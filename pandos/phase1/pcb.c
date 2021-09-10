@@ -105,7 +105,7 @@ pcb_t *removeProcQ(pcb_t **tp){
         *tp->p_next->p_prev = *tp;
     }
     
-
+    
 }
 
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
@@ -157,9 +157,7 @@ pcb_t *headProcQ(pcb_t *tp){
 }
 
 int emptyChile(pcb_t *p){
-    if (*p.p_child == NULL)
-        return TRUE
-    return FALSE
+
 }
 
 insertChild(pcb_t *prnt, pcb_t *p){
