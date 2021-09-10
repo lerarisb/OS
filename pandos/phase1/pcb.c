@@ -33,16 +33,15 @@ pcb_t *allocPcb(){
     if(pcbFree_h == NULL){
         return NULL;
     }
-    pcb_t temp;
-    temp = pcbFree_h;
-    pcbFree_h = pcbFree_h->p_next;
+    pcb_t *temp;
+    *temp = *pcbFree_h;
+    *pcbFree_h = *pcbFree_h->p_next;
     temp->p_child = NULL;
     temp->p_sib = NULL;
-    temp->p_prevsib = NULL;
     temp->p_prnt = NULL;
     temp->p_next = NULL;
     temp->p_prev = NULL;
-    return temp;
+    return *temp;
 }
 
 initPcbs(){
@@ -144,6 +143,7 @@ pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
                 *currentPcb = currentPcb -> p_next;
             }
             }
+            return NULL:
         }
     }
 }
