@@ -2,6 +2,8 @@
 #include "../h/types.h"
 #include "../h/pcb.h"
 
+HIDDEN pcb_PTR, pcbFree_h;
+
 typedef struct pcb_t{
     struct pcb_t        *p_next, 
                         *p_prev,
