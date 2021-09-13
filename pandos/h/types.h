@@ -29,6 +29,22 @@ typedef struct {
 #define t_transm_command	d_data1
 
 
+typedef struct pcb_t{
+    struct pcb_t        *p_next, 
+                        *p_prev,
+
+                        *p_prnt,
+                        *p_child,
+                        *p_sib;
+
+    state_t             p_s;
+    cpu_t               p_time;
+    int                 *p_semAdd;
+
+//support layer info page 8 not included because of error
+
+} pcb_t, *pcb_PTR;
+
 /* Bus Register Area */
 typedef struct {
 	unsigned int rambase;

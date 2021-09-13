@@ -2,21 +2,7 @@
 #include "../h/types.h"
 #include "../h/pcb.h"
 
-typedef struct pcb_t{
-    struct pcb_t        *p_next, 
-                        *p_prev,
-
-                        *p_prnt,
-                        *p_child,
-                        *p_sib;
-
-    state_t             p_s;
-    cpu_t               p_time;
-    int                 *p_semAdd;
-
-//support layer info page 8 not included because of error
-
-} pcb_t;
+HIDDEN pcb_PTR, pcbFree_h;
 
 void freePcb(pcb_t *p){
     if(pcbFree_h == NULL) {
@@ -105,7 +91,7 @@ pcb_t *removeProcQ(pcb_t **tp){
         *tp->p_next->p_prev = *tp;
     }
     
-    
+
 }
 
 pcb_t *outProcQ(pcb_t **tp, pcb_t *p){
@@ -157,7 +143,9 @@ pcb_t *headProcQ(pcb_t *tp){
 }
 
 int emptyChile(pcb_t *p){
-
+    if (*p.p_child == NULL)
+        return TRUE
+    return FALSE
 }
 
 insertChild(pcb_t *prnt, pcb_t *p){
@@ -178,7 +166,7 @@ insertChild(pcb_t *prnt, pcb_t *p){
 
 pcb_t *removeChild(pcb_t *p){
     //test to see if p has child
-    if (emptyChile(*p))
+    if (emptyChile(*p)){
         return NULL;
     }
     //test to see if p has more than one child
@@ -197,7 +185,8 @@ pcb_t *removeChild(pcb_t *p){
     *p->p_child->p_parent = NULL; 
     //take parent and set child to null
     *p->p_child = NULL;
-    return*currentChild;
+    return *currentChild;
+}
 
 pcb_t *outChild(pcb_t *p){
     //check to see if p has parent
