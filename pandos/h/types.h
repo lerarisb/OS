@@ -28,6 +28,15 @@ typedef struct {
 #define t_transm_status		d_data0
 #define t_transm_command	d_data1
 
+#define STATEREGNUM	31
+typedef struct state_t {
+	unsigned int	s_entryHI;
+	unsigned int	s_cause;
+	unsigned int	s_status;
+	unsigned int 	s_pc;
+	int	 	s_reg[STATEREGNUM];
+
+} state_t, *state_PTR;
 
 typedef struct pcb_t{
     struct pcb_t        *p_next, 
@@ -37,11 +46,11 @@ typedef struct pcb_t{
                         *p_child,
                         *p_sib;
 
-    state_t             p_s;
+    struct state_t      p_s;
     cpu_t               p_time;
     int                 *p_semAdd;
 
-//support layer info page 8 not included because of error
+/* support layer info page 8 not included because of error */
 
 } pcb_t, *pcb_PTR;
 
@@ -73,15 +82,7 @@ typedef struct passupvector {
 } passupvector_t;
 
 
-#define STATEREGNUM	31
-typedef struct state_t {
-	unsigned int	s_entryHI;
-	unsigned int	s_cause;
-	unsigned int	s_status;
-	unsigned int 	s_pc;
-	int	 			s_reg[STATEREGNUM];
 
-} state_t, *state_PTR;
 
 #define	s_at	s_reg[0]
 #define	s_v0	s_reg[1]
