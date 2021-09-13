@@ -68,13 +68,13 @@ pcb_t *mkEmptyProcQ(){
 
 int emptyProcQ(pcb_t *tp){
     /*tp points to tail of queue, if queue is empty then return true*/
-    return (tp == null);
+    return (tp == NULL);
 
 
 }
 /*inserting a pcb into the process queue
 given the tail pointer of the process queue and the pcb we want to insert*/
-insertProcQ(pcb_t **tp, pcb_t *p){
+void insertProcQ(pcb_t **tp, pcb_t *p){
     /* *tp points to tail , *p is the one being inserted
     must store old tail*/
     pcb_t *oldTail = *tp;
@@ -215,7 +215,7 @@ pcb_t *removeChild(pcb_t *p){
         return NULL;
     }
     /*test to see if p has more than one child*/
-    pcb_t *currentChild = *p->p_child;
+    pcb_t currentChild = *p->p_child;
     if (*currentChild->p_sib != NULL){
         /*there is more than one child
         set the second child's parent to *p*/
