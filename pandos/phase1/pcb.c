@@ -11,7 +11,7 @@ void freePcb(pcb_t *p){
     check to make sure pcb free list isn't null (that there are pcbs)
     if it is null, p becomes the first element in list*/
     if(pcbFree_h == NULL) {
-        pcbFree_h = *p;
+        pcbFree_h = p;
         return;
     }
     /*add to the head of the linked list of pcbs maintained in pcb free*/
@@ -27,7 +27,7 @@ pcb_t *allocPcb(){
     /*allocated a pcb from the free list to the queue of active pcbs
 
     check to make sure there is a pcb to remove from free list*/
-    if(*pcbFree_h == NULL){
+    if(pcbFree_h == NULL){
         return NULL;
     }
 
@@ -47,7 +47,7 @@ pcb_t *allocPcb(){
     temp->p_prnt = NULL;
     temp->p_next = NULL;
     temp->p_prev = NULL;
-    return *temp;
+    return temp;
 }
 
 initPcbs(){
