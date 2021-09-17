@@ -54,6 +54,13 @@ typedef struct pcb_t{
 
 } pcb_t, *pcb_PTR;
 
+/*semaphore descriptor type */
+typedef struct semd_t {
+	struct semd_t *s_next;
+	int *s_semAdd;
+	pcb_t *s_procQ;
+} semd_t;
+
 /* Bus Register Area */
 typedef struct {
 	unsigned int rambase;
