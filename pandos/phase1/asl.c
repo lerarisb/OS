@@ -3,6 +3,7 @@
 #include "../h/pcb.h"
 #include "../h/asl.h"
 #include "../phase1/pcb.c"
+#include <limits.h>
 
 semd_t *semdFree_h; 
 semd_t *semd_h; 
@@ -60,15 +61,15 @@ void initASL(){
 	semd_t *dumb;
 	dumb = &(semdTable[0]);
 	semd_t *dumber;
-	dumber &(semdTable[1]);
+	dumber = &(semdTable[1]);
 	
 	/* making dumb the first dummy node */
 	dumb->s_semAdd = 0;
     	dumb->s_procQ = NULL;
-    	dumb->s_next = last;
+    	dumb->s_next = dumber;
     	
     	/* making dumber the last dummy node */
-    	dumber->s_semAdd = (int*) MAXINT; 
+    	dumber->s_semAdd = (INT_MAX); 
     	dumber->s_procQ = NULL;
     	dumber->s_next = NULL;
 
@@ -89,7 +90,7 @@ void initASL(){
 		currentHead = currentHead -> s_next;
 	}
 	return currentHead;
-	}
+}
 
 
 
@@ -116,9 +117,7 @@ int insertBlocked(int *semAdd, pcb_t *p){
 
 	/*initalizing fields*/
 	temp->s_semAdd = semAdd;
-	temp->s_procQ = mkEmptyProcQ();
-
-		
+	temp->s_procQ = mkEmptyProcQ();		
 }
 
 pcb_t *removeBlocked(int *semAdd){
@@ -133,8 +132,8 @@ pcb_t *removeBlocked(int *semAdd){
 		/*remove the descriptor from ASL and return to semdFree list*/
 		if (emptyProcQ(s_procq)){
 			freeSemd(*toBeRemoved);
-			return;}
-
+			return;
+		}
 	}
 
 		/*if there are pcbs, remove a pcb from head*/
@@ -149,17 +148,18 @@ pcb_t *outBlocked(pcb_t *p){
 	/*traverse ASL*/
 	if (helpTraverse(p->p_semAdd) != NULL){
 
-		/*semaphor was in ASL and a pcb needs to be removed*/
+	/*semaphor was in ASL and a pcb needs to be removed*/
 		semd_t *associatedSemaphore = helpTraverse(semAdd);
 
 		/*check to see if a pcb can be removed*/
 		/*if the process queue for semaphore is empty, all pcbs are gone*/ 
 		if (emptyProcQ(p)){
-			return NULL;}
+			return NULL;
+		}
 
 	/*if there are pcbs, remove the desired one*/
-			outProcQ(*associatedSemaphore->s_procQ, *p);
-}
+		outProcQ(*associatedSemaphore->s_procQ, *p);
+	}
 }
 
 /*helper function to remove semaphor from active list*/
@@ -191,6 +191,3 @@ void freeSemd(semd_t *semd) {
 	return;
 
 }
-
-	
-
