@@ -61,6 +61,7 @@ initPcbs(){
     while(i < MAXPROC){
         insertProcQ(&pcbFree_h, &pcbInit[i]);
         i++;
+    }
 }
 
 pcb_t *mkEmptyProcQ(){
@@ -246,6 +247,7 @@ pcb_t *removeChild(pcb_t *p){
     /*take parent and set child to null*/
     p->p_child = NULL;
     return currentChild;
+}
 
 /*removes a specific child*/
 pcb_t *outChild(pcb_t *p){

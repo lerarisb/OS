@@ -52,6 +52,7 @@ void initASL(){
 	static semd_t semdTable[MAXPROC+2];
 	semd_h = NULL;
 	semdFree_h = NULL;
+	int i;
 	/* fill the table excluding the two dummy nodes */
 	for(i=2; i < (MAXPROC+2); i++){
 		freeSemd(&(semdTable[i]));
@@ -85,7 +86,6 @@ semd_t* semAlloc(){
 
 	if (semdFree_h == NULL){
 		return NULL;
-		
 	}
 	semd_t *currentHead = semdFree_h;
 	semdFree_h = currentHead->s_next;
@@ -100,17 +100,17 @@ int insertBlocked(int *semAdd, pcb_t *p){
 	semd_t *temp = helpTraverse(semAdd);
 	if (temp != NULL) {
 		/*if it is in ASL, set the procQ equal to the given pcb*/
-		helpTraverse(semAdd)->s_procq = p;
+		temp->s_procQ = p;
 	}
 
 	/*the semaphore is not active so we must allocate it by calling semAlloc*/
-	semd_t *temp = semAlloc();
+	semd_t *new = semAlloc();
 
 	/*store the old head*/
 	semd_t *oldHead = semd_h;
 
 	/*list points to new head on ASL list*/
-	semd_h = temp;
+	semd_h = new;
 
 	/*new head next is the old head*/
 	temp->s_next = oldHead;
@@ -121,23 +121,29 @@ int insertBlocked(int *semAdd, pcb_t *p){
 }
 
 pcb_t *removeBlocked(int *semAdd){
-	/*traverse ASL*/
+	pcb_t* temp;
+	semd_t *semaphore;
+	semaphore = helpTraverse(semAdd);
+	/* checks if semAdd is in list */
 	if (helpTraverse(semAdd) != NULL){
-
-		/*semaphor was in ASL and a pcb needs to be removed*/
-		semd_t *toBeRemoved = helpTraverse(semAdd);
+		temp = removeProcQ(&semaphore->s_next->s_procQ);
+	
 
 		/*check to see if a pcb can be removed*/
 		/*if the process queue for semaphore is empty, all pcbs are gone */
 		/*remove the descriptor from ASL and return to semdFree list*/
-		if (emptyProcQ(s_procq)){
-			freeSemd(*toBeRemoved);
-			return;
+		if (emptyProcQ(semaphore->s_next->s_procQ)){
+			semd_t *toBeRemoved = semaphore->s_next;
+			semaphore->s_next = semaphore->s_next->s_next;
+			freeSemd(toBeRemoved);
+			temp->p_semAdd = NULL;
+			return temp;
+		}
+		else{
+			temp->p_semAdd = NULL;
+			return temp;
 		}
 	}
-
-		/*if there are pcbs, remove a pcb from head*/
-		removeProcQ(s_procq);
 
 	/*semaphor was not in ASL so nothing to remove*/
 	return NULL;
@@ -145,21 +151,33 @@ pcb_t *removeBlocked(int *semAdd){
 }
 
 pcb_t *outBlocked(pcb_t *p){
-	/*traverse ASL*/
-	if (helpTraverse(p->p_semAdd) != NULL){
-
-	/*semaphor was in ASL and a pcb needs to be removed*/
-		semd_t *associatedSemaphore = helpTraverse(semAdd);
+	pcb_t* temp;
+	semd_t *semaphore;
+	semaphore = helpTraverse(p->p_semAdd);
+	/* checks if semAdd is in list */
+	if (semaphore != NULL){
+		temp = outProcQ(&semaphore->s_next->s_procQ, p);
+	
 
 		/*check to see if a pcb can be removed*/
-		/*if the process queue for semaphore is empty, all pcbs are gone*/ 
-		if (emptyProcQ(p)){
-			return NULL;
+		/*if the process queue for semaphore is empty, all pcbs are gone */
+		/*remove the descriptor from ASL and return to semdFree list*/
+		if (emptyProcQ(semaphore->s_next->s_procQ)){
+			semd_t *toBeRemoved = semaphore->s_next;
+			semaphore->s_next = semaphore->s_next->s_next;
+			freeSemd(toBeRemoved);
+			temp->p_semAdd = NULL;
+			return temp;
 		}
-
-	/*if there are pcbs, remove the desired one*/
-		outProcQ(*associatedSemaphore->s_procQ, *p);
+		else{
+			temp->p_semAdd = NULL;
+			return temp;
+		}
 	}
+
+	/*semaphor was not in ASL so nothing to remove*/
+	return NULL;
+
 }
 
 /*helper function to remove semaphor from active list*/
