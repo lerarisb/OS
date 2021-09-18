@@ -79,16 +79,16 @@ void initASL(){
 /*remove a semaphor from free list*/
 /*return newly removed semaphor*/
 
-*semd_t semAlloc(){
+semd_t* semAlloc(){
 
 	/*check to make sure free list is not null*/
 
-	if (semdFree_h != NULL){
-
-		smed_t *currentHead;
-		currentHead = semdFree_h;
-		currentHead = currentHead -> s_next;
+	if (semdFree_h == NULL){
+		return NULL;
+		
 	}
+	semd_t *currentHead = semdFree_h;
+	semdFree_h = currentHead->s_next;
 	return currentHead;
 }
 
@@ -97,7 +97,7 @@ void initASL(){
 
 int insertBlocked(int *semAdd, pcb_t *p){
 	/*check to see if semaphore is active in ASL*/
-	smed_t *temp = helpTraverse(semAdd);
+	semd_t *temp = helpTraverse(semAdd);
 	if (temp != NULL) {
 		/*if it is in ASL, set the procQ equal to the given pcb*/
 		helpTraverse(semAdd)->s_procq = p;
@@ -164,30 +164,42 @@ pcb_t *outBlocked(pcb_t *p){
 
 /*helper function to remove semaphor from active list*/
 void freeSemd(semd_t *semd) {
-	/*store new head*/
-	semd_h *newHead = semd->s_next;
+	/* checks if free list is empty, if it is, then add semd to free list and set it as pointer */
+	if(semdFree_h == NULL){
+		semd->s_next = NULL;
+		semdFree_h == NULL;
+	}
+	/* if it is not empty add semd to the tail and change the head */
+	else {
+		semd->s_next = semdFree_h;
+		semdFree_h = semd;
+	}
+	
+	/*store new head
+	semd_h *newHead = semd->s_next; */
 
-	/*list points to new head*/
-	semd_h = *newHead;
+	/*list points to new head
+	semd_h = *newHead; */
 
 	/*move to  freeList*/
 	/*go to freeList tail to add*/
 
-	/*start at head of list*/
+	/*start at head of list
 
 	semd_t *current = semdFree_h;
+	semd_t *previous; */
+	/*a check to see if at end
+	while (current->s_next){ */
 
-	/*a check to see if at end*/
-	while (current->s_next){
-
-		/*if not at end, store current semd in case the next one is the tail*/
-		semd_t *previous = current;
+		/*if not at end, store current semd in case the next one is the tail
+		previous = current;
 		current = current->s_next;
-	}
+	} */
 
-	/*when at tail, set previous equal to the new tail*/
-	previous->s_next = *current;
+	/*when at tail, set previous equal to the new tail
+	previous->s_next = current;
 
 	return;
-
+*/
 }
+
