@@ -47,8 +47,30 @@ int helpTraverse(int *semAdd){
 }
 
 void initASL(){
-	/*semd_t freeList[MAXPROC] = static semd_t semdTable[MAXPROC];*/
+	/* initialize the semdTable */
+	static semd_t semdTable[MAXPROC+2];
+	semd_h = NULL;
+	semdFree_h = NULL;
+	/* fill the table excluding the two dummy nodes */
+	for(i=2; i < (MAXPROC+2); i++){
+		freeSemd(&(semdTable[i]));
+	}
 	
+	/* initializing the two dummy nodes */
+	semd_t *dumb;
+	dumb = &(semdTable[0]);
+	semd_t *dumber;
+	dumber &(semdTable[1]);
+	
+	/* making dumb the first dummy node */
+	dumb->s_semAdd = 0;
+    	dumb->s_procQ = NULL;
+    	dumb->s_next = last;
+    	
+    	/* making dumber the last dummy node */
+    	dumber->s_semAdd = (int*) MAXINT; 
+    	dumber->s_procQ = NULL;
+    	dumber->s_next = NULL;
 
 }
 
