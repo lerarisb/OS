@@ -79,15 +79,16 @@ void initASL(){
 /*remove a semaphor from free list*/
 /*return newly removed semaphor*/
 
-*semd_t semAlloc(){
+semd_t *semAlloc(){
 
 	/*check to make sure free list is not null*/
 
+	semd_t *currentHead;
 	if (semdFree_h != NULL){
 
-		smed_t *currentHead;
+		
 		currentHead = semdFree_h;
-		currentHead = currentHead -> s_next;
+		currentHead = currentHead->s_next;
 	}
 	return currentHead;
 }
@@ -97,14 +98,14 @@ void initASL(){
 
 int insertBlocked(int *semAdd, pcb_t *p){
 	/*check to see if semaphore is active in ASL*/
-	smed_t *temp = helpTraverse(semAdd);
+	semd_t *temp = helpTraverse(semAdd);
 	if (temp != NULL) {
 		/*if it is in ASL, set the procQ equal to the given pcb*/
-		helpTraverse(semAdd)->s_procq = p;
+		temp->s_procQ = p;
 	}
 
 	/*the semaphore is not active so we must allocate it by calling semAlloc*/
-	semd_t *temp = semAlloc();
+	semAlloc();
 
 	/*store the old head*/
 	semd_t *oldHead = semd_h;
@@ -121,23 +122,24 @@ int insertBlocked(int *semAdd, pcb_t *p){
 }
 
 pcb_t *removeBlocked(int *semAdd){
+	semd_t *toBeRemoved;
 	/*traverse ASL*/
 	if (helpTraverse(semAdd) != NULL){
 
 		/*semaphor was in ASL and a pcb needs to be removed*/
-		semd_t *toBeRemoved = helpTraverse(semAdd);
+		toBeRemoved = helpTraverse(semAdd);
 
 		/*check to see if a pcb can be removed*/
 		/*if the process queue for semaphore is empty, all pcbs are gone */
 		/*remove the descriptor from ASL and return to semdFree list*/
-		if (emptyProcQ(s_procq)){
-			freeSemd(*toBeRemoved);
+		if (emptyProcQ(toBeRemoved->s_procQ)){
+			freeSemd(toBeRemoved);
 			return;
 		}
 	}
 
 		/*if there are pcbs, remove a pcb from head*/
-		removeProcQ(s_procq);
+		removeProcQ(toBeRemoved->s_procQ);
 
 	/*semaphor was not in ASL so nothing to remove*/
 	return NULL;
@@ -149,7 +151,7 @@ pcb_t *outBlocked(pcb_t *p){
 	if (helpTraverse(p->p_semAdd) != NULL){
 
 	/*semaphor was in ASL and a pcb needs to be removed*/
-		semd_t *associatedSemaphore = helpTraverse(semAdd);
+		semd_t *associatedSemaphore = helpTraverse(p->p_semAdd);
 
 		/*check to see if a pcb can be removed*/
 		/*if the process queue for semaphore is empty, all pcbs are gone*/ 
@@ -158,17 +160,20 @@ pcb_t *outBlocked(pcb_t *p){
 		}
 
 	/*if there are pcbs, remove the desired one*/
-		outProcQ(*associatedSemaphore->s_procQ, *p);
+		outProcQ(associatedSemaphore->s_procQ, p);
 	}
 }
 
 /*helper function to remove semaphor from active list*/
 void freeSemd(semd_t *semd) {
+
+	semd_t* previous;
+
 	/*store new head*/
-	semd_h *newHead = semd->s_next;
+	semd_t *newHead = semd->s_next;
 
 	/*list points to new head*/
-	semd_h = *newHead;
+	semd_h = newHead;
 
 	/*move to  freeList*/
 	/*go to freeList tail to add*/
@@ -186,7 +191,7 @@ void freeSemd(semd_t *semd) {
 	}
 
 	/*when at tail, set previous equal to the new tail*/
-	previous->s_next = *current;
+	previous->s_next = current;
 
 	return;
 
