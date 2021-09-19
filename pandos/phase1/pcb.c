@@ -9,7 +9,6 @@ HIDDEN pcb_PTR pcbFree_h;
 void freePcb(pcb_t *p){
     /*insert element pointed to by p onto pcbFree list
     pcb is no longer in use, being removed from queue
-
     check to make sure pcb free list isn't null (that there are pcbs)
     if it is null, p becomes the first element in list*/
     if(pcbFree_h == NULL) {
@@ -27,7 +26,6 @@ void freePcb(pcb_t *p){
 
 pcb_t *allocPcb(){
     /*allocated a pcb from the free list to the queue of active pcbs
-
     check to make sure there is a pcb to remove from free list*/
     if(pcbFree_h == NULL){
         return NULL;
@@ -61,6 +59,7 @@ initPcbs(){
     while(i < MAXPROC){
         insertProcQ(&pcbFree_h, &pcbInit[i]);
         i++;
+    }
 }
 
 pcb_t *mkEmptyProcQ(){
@@ -246,6 +245,7 @@ pcb_t *removeChild(pcb_t *p){
     /*take parent and set child to null*/
     p->p_child = NULL;
     return currentChild;
+}
 
 /*removes a specific child*/
 pcb_t *outChild(pcb_t *p){
