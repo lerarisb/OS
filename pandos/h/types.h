@@ -29,6 +29,7 @@ typedef struct {
 #define t_transm_command	d_data1
 
 #define STATEREGNUM	31
+
 typedef struct state_t {
 	unsigned int	s_entryHI;
 	unsigned int	s_cause;
