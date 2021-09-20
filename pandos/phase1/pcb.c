@@ -264,46 +264,46 @@ pcb_PTR removeChild(pcb_PTR p){
 
 /*removes a specific child*/
 pcb_PTR outChild(pcb_PTR p){
-    /*store parent of p for further use */
-    pcb_PTR parent = p->p_prnt;
+   /*store parent of p for further use 
+    pcb_PTR parent = p->p_prnt;*/
+    if (p == NULL){
+        return NULL;
+    }
     /*check to see if p has parent*/
-    if (parent == NULL){
+    if (p->p_prnt == NULL){
         return NULL;
     }
     /* if the only child of its parent */
-    else if(p->p_sib == NULL){
+    if(p->p_prevSib == NULL && p->p_sib == NULL && p == p->p_prnt->p_child){
         /* set child of parent to null */
-        parent->p_child = NULL;
+        p->p_prnt->p_child = NULL;
         /* set parent of p to null */
         p->p_prnt = NULL;
+        return p;
     }
     /* if first child is p */
-    else if(p == parent->p_child){
-        parent->p_child = p->p_sib;
+    if(p == p->p_prnt->p_child){
+        p->p_prnt->p_child = p->p_sib;
         p->p_sib = NULL;
+        p->p_sib->p_prevSib = NULL;
         p->p_prnt = NULL;
+        return p;
     }
-    /* if not first child then need to search */
-    else{
-        /* puts the first child, prevPointerChild, and the second child, pointerChild
-        into variables that will be needed to help traverse */
-        pcb_PTR pointerChild = parent->p_child->p_sib;
-        pcb_PTR prevPointerChild = parent->p_child;
-        /* traverse the children */
-        while(pointerChild->p_sib != NULL){
-            /* if we have found the child */
-            if(pointerChild == p){
-                /* set prevPointerChild sib to sib of pointerChild */
-                prevPointerChild->p_sib->p_sib = pointerChild->p_sib;
-                /* set pointerChild sib to null */
-                pointerChild->p_sib = NULL;
-            }
-            else {
-                /* move each pointer to the next child */
-                pointerChild = pointerChild->p_sib;
-                prevPointerChild = prevPointerChild->p_sib;
-            }
-        }
+    /* check last child */ 
+    if(p->p_sib == NULL){
+        p->p_prevSib->p_sib = NULL;
+        p->p_prevSib = NULL;
+        p->p_prnt = NULL;
+        return p;
+    }
+    /* if not first child */
+    if (p->p_prevSib != NULL && p->p_sib != NULL){
+        p->p_sib->p_prevSib = p->p_prevSib;
+        p->p_prevSib->p_sib = p->p_sib;
+        p->p_prnt = NULL;
+        p->p_sib = NULL;
+        p->p_prevSib = NULL;
+        return p;
     }
     return NULL;
 }
