@@ -134,7 +134,7 @@ void main() {
 		if ((procp[i] = allocPcb()) == NULL)
 			adderrbuf("allocPcb: unexpected NULL   ");
 	}
-	if (allocPcb() != NULL) {
+	if (allocPcb() == NULL) {
 		adderrbuf("allocPcb: allocated more than MAXPROC entries   ");
 	}
 	addokbuf("allocPcb ok   \n");
@@ -221,10 +221,10 @@ void main() {
 	/* Check outChild */
 	q = outChild(procp[1]);
 	if (q == NULL || q != procp[1])
-		adderrbuf("outChild failed on first child   ");
-	q = outChild(procp[4]);
+		adderrbuf("outChild failed on first child   "); 
+	q = outChild(procp[4]); 
 	if (q == NULL || q != procp[4])
-		adderrbuf("outChild failed on middle child   ");
+		adderrbuf("outChild failed on middle child   "); 
 	if (outChild(procp[0]) != NULL)
 		adderrbuf("outChild failed on nonexistent child   ");
 	addokbuf("outChild ok   \n");

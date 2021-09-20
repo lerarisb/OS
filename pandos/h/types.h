@@ -45,7 +45,8 @@ typedef struct pcb_t{
 
                         *p_prnt,
                         *p_child,
-                        *p_sib;
+                        *p_sib,
+                        *p_prevSib;
 
     struct state_t      p_s;
     cpu_t               p_time;

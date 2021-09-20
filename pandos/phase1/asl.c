@@ -10,7 +10,7 @@ semd_t *semd_h;
 
 pcb_t *headBlocked(int *semAdd){
     semd_t *temp;
-    temp = helpTraverse(*semAdd); 
+    temp = helpTraverse(semAdd); 
     if(temp == NULL || emptyProcQ(temp->s_procQ)){
         return NULL;
     }
@@ -18,15 +18,12 @@ pcb_t *headBlocked(int *semAdd){
         return headProcQ(temp->s_procQ);
     }
 }
-
+/*helper function that acts to search for given semaphore*/
 int helpTraverse(int *semAdd){
-	/*helper function that acts to search for given semaphore*/
-
 	/*start at head of active list*/
 	semd_t *currentSemd = semd_h;
-
-	/*first case*/
-	/*head of active list is the given semaphore*/
+	/*first case
+	head of active list is the given semaphore*/
 	if (currentSemd == semAdd){
 		return semAdd;
 	}
