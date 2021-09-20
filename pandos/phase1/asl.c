@@ -14,8 +14,8 @@ semd_t *helpTraverse(int *semAdd){
 	semd_t *currentSemd = semd_h;
 	semd_t *nextSemd = semd_h->s_next;
 	/*first case head of active list is the given semaphore*/
-	if (nextSemd->s_semAdd == (INT_MAX)){
-		return currentSemd;
+	if (nextSemd->s_semAdd == (INT_MAX)) {
+		return semd_h;
 	}
 	/*head is not given semaphore so must traverse*/
 	/*checks to make sure not at end of list*/
@@ -27,7 +27,6 @@ semd_t *helpTraverse(int *semAdd){
 		currentSemd = nextSemd;
 		nextSemd = nextSemd->s_next;
 	}
-	/*given semaphore not in list*/
 	return currentSemd;
 }
 
@@ -42,6 +41,19 @@ pcb_t *headBlocked(int *semAdd){
     }
 }
 
+/*helper function to remove semaphor from active list*/
+void freeSemd(semd_t *semd) {
+	/* checks if free list is empty, if it is, then add semd to free list and set it as pointer */
+	if(semdFree_h == NULL){
+		semd->s_next = NULL;
+		semdFree_h == NULL;
+	}
+	/* if it is not empty add semd to the tail and change the head */
+	else {
+		semd->s_next = semdFree_h;
+		semdFree_h = semd;
+	}
+}
 
 void initASL(){
 	/* initialize the semdTable */
@@ -88,39 +100,30 @@ semd_t* semAlloc(){
 	return currentHead;
 }
 
-
-
-
 int insertBlocked(int *semAdd, pcb_t *p){
-	/*check to see if semaphore is active in ASL*/
 	semd_t *temp = helpTraverse(semAdd);
-	if(temp->s_next->semAdd != semAdd) {
-		/*the semaphore is not active so we must allocate it by calling semAlloc*/
+	if(temp->s_next->s_semAdd != semAdd) {
 		semd_t *newPcb = semAlloc();
 		if(newPcb == NULL){
 			return TRUE;
 		}
 		else {
-			newPcb->s_next = temp->s_next
-		}
-		/*if it is in ASL, set the procQ equal to the given pcb*/
-		temp->s_procQ = p;
+			newPcb->s_next = temp->s_next;
+			temp->s_next = newPcb;
+			newPcb->s_procQ = mkEmptyProcQ();
+			p->p_semAdd = semAdd;
+			newPcb->s_semAdd = semAdd;
+			insertProcQ(&(newPcb->s_procQ), p);
+			return FALSE;
+		}	
 	}
-
-
-	/*store the old head*/
-	semd_t *oldHead = semd_h;
-
-	/*list points to new head on ASL list*/
-	semd_h = new;
-
-	/*new head next is the old head*/
-	temp->s_next = oldHead;
-
-	/*initalizing fields*/
-	temp->s_semAdd = semAdd;
-	temp->s_procQ = mkEmptyProcQ();		
+	else{
+		p->p_semAdd = semAdd;
+		insertProcQ(&(temp->s_next->s_procQ), p);
+		return FALSE;
+	}		
 }
+
 
 pcb_t *removeBlocked(int *semAdd){
 	pcb_t* temp;
@@ -182,41 +185,4 @@ pcb_t *outBlocked(pcb_t *p){
 
 }
 
-/*helper function to remove semaphor from active list*/
-void freeSemd(semd_t *semd) {
-	/* checks if free list is empty, if it is, then add semd to free list and set it as pointer */
-	if(semdFree_h == NULL){
-		semd->s_next = NULL;
-		semdFree_h == NULL;
-	}
-	/* if it is not empty add semd to the tail and change the head */
-	else {
-		semd->s_next = semdFree_h;
-		semdFree_h = semd;
-	}
-	
-	/*store new head
-	semd_h *newHead = semd->s_next; */
 
-	/*list points to new head
-	semd_h = *newHead; */
-
-	/*move to  freeList*/
-	/*go to freeList tail to add*/
-
-	/*start at head of list
-	semd_t *current = semdFree_h;
-	semd_t *previous; */
-	/*a check to see if at end
-	while (current->s_next){ */
-
-		/*if not at end, store current semd in case the next one is the tail
-		previous = current;
-		current = current->s_next;
-	} */
-
-	/*when at tail, set previous equal to the new tail
-	previous->s_next = current;
-	return;
-*/
-}
