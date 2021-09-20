@@ -8,6 +8,29 @@
 semd_t *semdFree_h; 
 semd_t *semd_h; 
 
+/*helper function that acts to search for given semaphore*/
+semd_t *helpTraverse(int *semAdd){
+	/*start at head of active list*/
+	semd_t *currentSemd = semd_h;
+	semd_t *nextSemd = semd_h->s_next;
+	/*first case head of active list is the given semaphore*/
+	if (nextSemd->s_semAdd == (INT_MAX)){
+		return currentSemd;
+	}
+	/*head is not given semaphore so must traverse*/
+	/*checks to make sure not at end of list*/
+	while (semAdd >= nextSemd->s_semAdd){
+		/*checks to see if current semaphore is given semaphore*/
+		if (nextSemd->s_semAdd == semAdd){
+			return currentSemd;
+		}
+		currentSemd = nextSemd;
+		nextSemd = nextSemd->s_next;
+	}
+	/*given semaphore not in list*/
+	return currentSemd;
+}
+
 pcb_t *headBlocked(int *semAdd){
     semd_t *temp;
     temp = helpTraverse(semAdd); 
@@ -18,31 +41,7 @@ pcb_t *headBlocked(int *semAdd){
         return headProcQ(temp->s_procQ);
     }
 }
-/*helper function that acts to search for given semaphore*/
-int helpTraverse(int *semAdd){
-	/*start at head of active list*/
-	semd_t *currentSemd = semd_h;
-	/*first case
-	head of active list is the given semaphore*/
-	if (currentSemd == semAdd){
-		return semAdd;
-	}
 
-	/*head is not given semaphore so must traverse*/
-
-	/*checks to make sure not at end of list*/
-
-	while (currentSemd->s_next){
-		currentSemd = currentSemd->s_next;
-		/*checks to see if current semaphore is given semaphore*/
-		if (currentSemd == semAdd){
-			return semAdd;
-		}
-	}
-	/*given semaphore not in list*/
-	return NULL;
-
-}
 
 void initASL(){
 	/* initialize the semdTable */
@@ -95,13 +94,19 @@ semd_t* semAlloc(){
 int insertBlocked(int *semAdd, pcb_t *p){
 	/*check to see if semaphore is active in ASL*/
 	semd_t *temp = helpTraverse(semAdd);
-	if (temp != NULL) {
+	if(temp->s_next->semAdd != semAdd) {
+		/*the semaphore is not active so we must allocate it by calling semAlloc*/
+		semd_t *newPcb = semAlloc();
+		if(newPcb == NULL){
+			return TRUE;
+		}
+		else {
+			newPcb->s_next = temp->s_next
+		}
 		/*if it is in ASL, set the procQ equal to the given pcb*/
 		temp->s_procQ = p;
 	}
 
-	/*the semaphore is not active so we must allocate it by calling semAlloc*/
-	semd_t *new = semAlloc();
 
 	/*store the old head*/
 	semd_t *oldHead = semd_h;

@@ -16,6 +16,9 @@ extern pcb_PTR removeBlocked (int *semAdd);
 extern pcb_PTR outBlocked (pcb_PTR p);
 extern pcb_PTR headBlocked (int *semAdd);
 extern void initASL ();
+extern semd_t *helpTraverse(int *semAdd);
+extern semd_t *semAlloc();
+extern void freeSemd(semd_t *semd);
 
 /***************************************************************/
 
