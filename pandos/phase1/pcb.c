@@ -24,17 +24,14 @@ void freePcb(pcb_PTR p){
 
 /*allocated a pcb from the free list to the queue of active pcbs */
 pcb_PTR allocPcb(){
-    /* check to make sure there is a pcb to remove from free list*/
-    if(pcbFree_h == NULL){
-        return NULL;
-    }
+    
     /*remove the first element from pcb free and add to queue
     removes any previous values from pcb*/
     pcb_PTR temp;
-    temp = pcbFree_h;
-    /*setting the pointer to the free list to the next pcb
-    essentially removing the current head on free list*/
-    pcbFree_h = pcbFree_h->p_next;
+    temp = removeProcQ(&pcbFree_h);
+
+    if (temp != NULL){
+
     /*all previous values of pcb are set to null*/
     temp->p_child = NULL;
     temp->p_sib = NULL;
@@ -44,7 +41,9 @@ pcb_PTR allocPcb(){
     temp->p_prevSib = NULL;
     temp->p_semAdd = NULL;
     temp->p_time = 0;
-    return temp;
+    
+}
+return temp;
 }
 
 /*initalize the pcbFree list to conatain all the elements of the static array of 
@@ -75,23 +74,25 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
     /* checks if it is empty 
     if empty make it circular */
     if(emptyProcQ((*tp))){
-    	p->p_next = p;
+        p->p_next = p;
     	p->p_prev = p;
     }
     /* checks if there is one singular node 
-    if one then assign p next and prev to current tail pointer and change old tail 
-    pointer prev and next to new node */
-    else if((*tp)->p_next == (*tp)){
+    if only one node, then insert a node at the tail
+    inserted node points to the one node that was already there
+    node that was already there points to inserted node */
+    /*else if((*tp)->p_next == (*tp)){
         p->p_next = *tp;
         p->p_prev = *tp;
         (*tp)->p_next = p;
         (*tp)->p_prev = p;
-    }
+    }*/
     /* if there are more than one nodes */
     else {
+        
         /* store current tail */
         pcb_PTR currentTail = *tp;
-        /* set new nodes next to currentTail next */
+        /* set new node next to currentTail next */
         p->p_next = currentTail->p_next;
         /* set currentTail next to new node */
         currentTail->p_next = p;
@@ -99,11 +100,12 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
         p->p_prev = currentTail;
         /* set head of queue prev to new tail */
         p->p_next->p_prev = p;
-        /* set new tail pointer */
-        (*tp) = p;
+        
+        
     }
     /* set tail pointer to new node */
     *tp = p;
+
 }
 
 /*removes the node from the head*/
@@ -112,29 +114,51 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
     if (emptyProcQ(*tp)){
         return NULL;
     }
+
     /* if there is a singular node */
-    else if((*tp)->p_next == (*tp)){
+    if((*tp)->p_next == (*tp)){
         /* store tail */
+        debug(1, 2, 3, 4);
         pcb_PTR tail = (*tp);
         /* empty the process queue */
         (*tp) = mkEmptyProcQ();
         /* return tail */
         return tail;
     }
+    
     /* if there are multiple nodes */
     else{
         /* storing tail, old head, and the new head*/
-        pcb_PTR tail = *tp;
-        pcb_PTR oldHead = tail->p_next;
-        pcb_PTR newHead = oldHead->p_next;
-        /* setting tail next to new head */
-        tail->p_next = newHead;
-        /* setting new head prev to the tail */
-        newHead->p_prev = tail;
-        /* setting old head next and prev to null */
+
+
+         
+        pcb_PTR oldHead = (*tp)->p_next;
+
+         
+
+        (*tp)->p_next = oldHead->p_next;
+         
+        
+        if ((*tp)->p_prev == (*tp)->p_next){
+            (*tp)->p_prev = (*tp);
+            
+           
+        }
+
+        else{
+            oldHead->p_next->p_prev = (*tp);
+        }
+
         oldHead->p_next = NULL;
         oldHead->p_prev = NULL;
+
+
+
         return oldHead;
+
+        
+
+      
     } 
 }
 
@@ -321,4 +345,9 @@ pcb_PTR outChild(pcb_PTR p){
         return p;
     }
     return NULL;
+}
+
+void debug (int a, int b, int c, int d){
+    int i = 42;
+    i++;
 }

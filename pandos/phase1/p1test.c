@@ -134,7 +134,7 @@ void main() {
 		if ((procp[i] = allocPcb()) == NULL)
 			adderrbuf("allocPcb: unexpected NULL   ");
 	}
-	if (allocPcb() == NULL) {
+	if (allocPcb() != NULL) {
 		adderrbuf("allocPcb: allocated more than MAXPROC entries   ");
 	}
 	addokbuf("allocPcb ok   \n");
@@ -151,6 +151,7 @@ void main() {
 	for (i = 0; i < 10; i++) {
 		if ((q = allocPcb()) == NULL)
 			adderrbuf("allocPcb: unexpected NULL while insert   ");
+		debugA(i, 1, 2, 3);
 		switch (i) {
 		case 0:
 			firstproc = q;
@@ -314,5 +315,10 @@ void main() {
 	addokbuf("ASL module ok   \n");
 	addokbuf("So Long and Thanks for All the Fish\n");
 
+}
+
+void debugA(int a, int b, int c, int d){
+	int i = 42;
+	i++;
 }
 
