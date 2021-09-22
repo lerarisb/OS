@@ -151,7 +151,6 @@ void main() {
 	for (i = 0; i < 10; i++) {
 		if ((q = allocPcb()) == NULL)
 			adderrbuf("allocPcb: unexpected NULL while insert   ");
-		debugA(i, 1, 2, 3);
 		switch (i) {
 		case 0:
 			firstproc = q;
@@ -174,8 +173,10 @@ void main() {
 	/* Check outProc and headProc */
 	if (headProcQ(qa) != firstproc)
 		adderrbuf("headProcQ failed   ");
+	
 	q = outProcQ(&qa, firstproc);
 	if (q == NULL || q != firstproc)
+		debugA(i, 1, 2, 3);
 		adderrbuf("outProcQ failed on first entry   ");
 	freePcb(q);
 	q = outProcQ(&qa, midproc);

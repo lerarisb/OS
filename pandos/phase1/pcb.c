@@ -121,7 +121,6 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
 
         /* store tail */
         pcb_PTR tail = tp;
-        debug(1, 2, 3, 4);
         /* empty the process queue */
         (*tp) = mkEmptyProcQ();
         /* return tail */
@@ -166,16 +165,18 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
 
 /*removes a specified pcb (p) from the queue pointed to by a tail pointer (tp)*/
 pcb_PTR outProcQ(pcb_PTR *tp, pcb_PTR p){
+    debug(1, 2, 3, 4);
     /*if the queue has no processes, there are none to be removed*/
     if (emptyProcQ(*tp)){
             return NULL;
     }
     /* if the tail pointer is the one to be removed*/
     if((*tp) == p){
+        debugTailIsRemoved(1, 2, 3, 4);
         /* if there is only one node */
-        if((*tp)->p_next == (*tp)){
+        if((*tp)->p_next == *tp){
             /* store node */
-            pcb_PTR tail = (*tp);
+            pcb_PTR tail = tp;
             /* empty process queue */
             (*tp) = mkEmptyProcQ();
             /* return tail */
@@ -183,7 +184,9 @@ pcb_PTR outProcQ(pcb_PTR *tp, pcb_PTR p){
         }
         /* if p is still the pointer but there is more than one node */
         /* Store old tail */
-        pcb_PTR oldTail = (*tp);
+        
+
+        pcb_PTR oldTail = tp;
         /* change the next and prev of the two nodes on both sides of old tail */
         oldTail->p_next->p_prev = oldTail->p_prev;
         oldTail->p_prev->p_next = oldTail->p_next;
@@ -197,6 +200,7 @@ pcb_PTR outProcQ(pcb_PTR *tp, pcb_PTR p){
     /* if it is not the tail pointer and needs to be found */
     /*store a current node (starting with the head) before we traverse 
     through the queue*/
+    debugTailIsNotRemoved(1, 2, 3, 4);
     pcb_PTR currentPcb = (*tp)->p_next;
     /*we continue to traverse until we hit the tail pointer
     if you have not hit the tail pointer but the current pcb is
@@ -350,6 +354,14 @@ pcb_PTR outChild(pcb_PTR p){
 }
 
 void debug (int a, int b, int c, int d){
+    int i = 42;
+    i++;}
+
+void debugTailIsRemoved (int a, int b, int c, int d){
+    int i = 42;
+    i++;
+}
+void debugTailIsNotRemoved (int a, int b, int c, int d){
     int i = 42;
     i++;
 }
