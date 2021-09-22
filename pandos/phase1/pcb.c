@@ -116,10 +116,12 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
     }
 
     /* if there is a singular node */
+    
     if((*tp)->p_next == (*tp)){
+
         /* store tail */
+        pcb_PTR tail = tp;
         debug(1, 2, 3, 4);
-        pcb_PTR tail = (*tp);
         /* empty the process queue */
         (*tp) = mkEmptyProcQ();
         /* return tail */
