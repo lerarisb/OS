@@ -7,30 +7,19 @@ HIDDEN pcb_PTR pcbFree_h;
 /*insert element pointed to by p onto pcbFree list
     pcb is no longer in use, being removed from queue*/ 
 void freePcb(pcb_PTR p){
-    /*check to make sure pcb free list isn't null (that there are pcbs)
-    if it is null, p becomes the first element in list*/
-    if(pcbFree_h == NULL) {
-        pcbFree_h = p;
-        return;
-    }
-    /*add to the head of the linked list of pcbs maintained in pcb free*/
-    else{
-        /*make p the first element
-        p points to the old first element*/
-        p->p_next = pcbFree_h;
-        pcbFree_h = p;
-    }
+    insertProcQ(&pcbFree_h, p);
 }
 
 /*allocated a pcb from the free list to the queue of active pcbs */
 pcb_PTR allocPcb(){
-    
+    if (pcbFree_h == NULL){
+        return NULL;
+    }
     /*remove the first element from pcb free and add to queue
     removes any previous values from pcb*/
     pcb_PTR temp;
     temp = removeProcQ(&pcbFree_h);
 
-    if (temp != NULL){
 
     /*all previous values of pcb are set to null*/
     temp->p_child = NULL;
@@ -41,8 +30,7 @@ pcb_PTR allocPcb(){
     temp->p_prevSib = NULL;
     temp->p_semAdd = NULL;
     temp->p_time = 0;
-    
-}
+
 return temp;
 }
 
@@ -77,11 +65,11 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
         p->p_next = p;
     	p->p_prev = p;
     }
-    /* checks if there is one singular node 
+    /*checks if there is one singular node 
     if only one node, then insert a node at the tail
     inserted node points to the one node that was already there
     node that was already there points to inserted node */
-    /*else if((*tp)->p_next == (*tp)){
+   /* else if((*tp)->p_next == (*tp)){
         p->p_next = *tp;
         p->p_prev = *tp;
         (*tp)->p_next = p;
@@ -89,10 +77,11 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
     }*/
     /* if there are more than one nodes */
     else {
-        
+
+
         /* store current tail */
         pcb_PTR currentTail = *tp;
-        /* set new node next to currentTail next */
+        /* set new node next to currentTail next */ 
         p->p_next = currentTail->p_next;
         /* set currentTail next to new node */
         currentTail->p_next = p;
@@ -100,7 +89,7 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
         p->p_prev = currentTail;
         /* set head of queue prev to new tail */
         p->p_next->p_prev = p;
-        
+    
         
     }
     /* set tail pointer to new node */
@@ -114,116 +103,32 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
     if (emptyProcQ(*tp)){
         return NULL;
     }
-
-    /* if there is a singular node */
-    
-    if((*tp)->p_next == (*tp)){
-
-        /* store tail */
-        pcb_PTR tail = tp;
-        /* empty the process queue */
-        (*tp) = mkEmptyProcQ();
-        /* return tail */
-        return tail;
-    }
-    
-    /* if there are multiple nodes */
-    else{
-        /* storing tail, old head, and the new head*/
-
-
-         
-        pcb_PTR oldHead = (*tp)->p_next;
-
-         
-
-        (*tp)->p_next = oldHead->p_next;
-         
-        
-        if ((*tp)->p_prev == (*tp)->p_next){
-            (*tp)->p_prev = (*tp);
-            
-           
-        }
-
-        else{
-            oldHead->p_next->p_prev = (*tp);
-        }
-
-        oldHead->p_next = NULL;
-        oldHead->p_prev = NULL;
-
-
-
-        return oldHead;
-
-        
-
-      
-    } 
+    return (outProcQ(tp, (*tp)->p_next));
 }
 
 /*removes a specified pcb (p) from the queue pointed to by a tail pointer (tp)*/
 pcb_PTR outProcQ(pcb_PTR *tp, pcb_PTR p){
-    debug(1, 2, 3, 4);
-    /*if the queue has no processes, there are none to be removed*/
-    if (emptyProcQ(*tp)){
+  pcb_PTR head = (*tp)->p_next;
+   if (emptyProcQ(*tp)){
             return NULL;
+   }
+    while (p != head && head != *tp){
+        head = head->p_next;
     }
-    /* if the tail pointer is the one to be removed*/
-    if((*tp) == p){
-        debugTailIsRemoved(1, 2, 3, 4);
-        /* if there is only one node */
-        if((*tp)->p_next == *tp){
-            /* store node */
-            pcb_PTR tail = tp;
-            /* empty process queue */
-            (*tp) = mkEmptyProcQ();
-            /* return tail */
-            return tail;
+    if (head == p){
+        head->p_next->p_prev = head->p_prev;
+        head->p_prev->p_next = head->p_next;
+        if(head == *tp){
+            *tp = head->p_prev;
         }
-        /* if p is still the pointer but there is more than one node */
-        /* Store old tail */
-        
-
-        pcb_PTR oldTail = tp;
-        /* change the next and prev of the two nodes on both sides of old tail */
-        oldTail->p_next->p_prev = oldTail->p_prev;
-        oldTail->p_prev->p_next = oldTail->p_next;
-        /* set old tail next and prev to null */
-        oldTail->p_next = NULL;
-        oldTail->p_prev = NULL;
-        /* set new tail pointer */
-        (*tp) = (*tp)->p_prev;
-        return oldTail;
+        if (p->p_next == p){
+            *tp = NULL;
+        }
+        p->p_next = NULL;
+        p->p_prev = NULL;
+        return p;
     }
-    /* if it is not the tail pointer and needs to be found */
-    /*store a current node (starting with the head) before we traverse 
-    through the queue*/
-    debugTailIsNotRemoved(1, 2, 3, 4);
-    pcb_PTR currentPcb = (*tp)->p_next;
-    /*we continue to traverse until we hit the tail pointer
-    if you have not hit the tail pointer but the current pcb is
-    not what you want to remove, keep traversing*/
-    while (currentPcb != *tp){
-        /*for each current pcb, check to see if it is the desired pcb
-        if it is, remove it*/
-        if (currentPcb == p){
-            /* if p is found change the next and prev of the two nodes next to the desired
-            pcb to be removed aka currentPcb */
-            currentPcb->p_next->p_prev = currentPcb->p_prev;
-            currentPcb->p_prev->p_next = currentPcb->p_next;
-            /* set removed Pcb (currentPcb) next and prev to null */
-            currentPcb->p_next = NULL;
-            currentPcb->p_prev = NULL;
-            return currentPcb;
-        }
-        /*if current pcb not what searching for, go to next pcb and continue loop*/
-        else{
-            currentPcb = currentPcb->p_next;
-        }
-    }
-    return NULL;   
+    return NULL;
 }
 
 /*return a pointer to first pcb from process queue whose tail is pointed to by a given tail pointer*/
@@ -233,8 +138,7 @@ pcb_PTR headProcQ(pcb_PTR tp){
         return NULL;
     }
     /*if not empty returns head of process queue*/
-    pcb_PTR head = tp->p_next;
-    return head; 
+    return (tp->p_next); 
 }
 
 /*determines if a pcb has any children true if none false if there is one or more*/
@@ -353,15 +257,4 @@ pcb_PTR outChild(pcb_PTR p){
     return NULL;
 }
 
-void debug (int a, int b, int c, int d){
-    int i = 42;
-    i++;}
 
-void debugTailIsRemoved (int a, int b, int c, int d){
-    int i = 42;
-    i++;
-}
-void debugTailIsNotRemoved (int a, int b, int c, int d){
-    int i = 42;
-    i++;
-}

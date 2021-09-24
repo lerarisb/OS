@@ -173,10 +173,8 @@ void main() {
 	/* Check outProc and headProc */
 	if (headProcQ(qa) != firstproc)
 		adderrbuf("headProcQ failed   ");
-	
 	q = outProcQ(&qa, firstproc);
 	if (q == NULL || q != firstproc)
-		debugA(i, 1, 2, 3);
 		adderrbuf("outProcQ failed on first entry   ");
 	freePcb(q);
 	q = outProcQ(&qa, midproc);
@@ -223,10 +221,10 @@ void main() {
 	/* Check outChild */
 	q = outChild(procp[1]);
 	if (q == NULL || q != procp[1])
-		adderrbuf("outChild failed on first child   "); 
-	q = outChild(procp[4]); 
+		adderrbuf("outChild failed on first child   ");
+	q = outChild(procp[4]);
 	if (q == NULL || q != procp[4])
-		adderrbuf("outChild failed on middle child   "); 
+		adderrbuf("outChild failed on middle child   ");
 	if (outChild(procp[0]) != NULL)
 		adderrbuf("outChild failed on nonexistent child   ");
 	addokbuf("outChild ok   \n");
@@ -322,4 +320,3 @@ void debugA(int a, int b, int c, int d){
 	int i = 42;
 	i++;
 }
-
