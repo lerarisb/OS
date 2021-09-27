@@ -1,7 +1,3 @@
-#include "../h/const.h"
-#include "../h/types.h"
-#include "../h/pcb.h"
-
 /*this file contains ways to interact with the data structures that represent processes, also called process control blocks or pcbs
 pcb.c acts as a queue manager and implements four pcb related sets of functions
 it supports allocation and deallocation of pcbs, maintenance of queues of pcbs, maintenance of trees of pcbs, 
@@ -29,16 +25,23 @@ to support process trees there are the following 4 externally visible methods: e
 
 */
 
+#include "../h/const.h"
+#include "../h/types.h"
+#include "../h/pcb.h"
+
+
+
 /*pointer to the head of the free list*/
 HIDDEN pcb_PTR pcbFree_h;
 
-/*insert element pointed to by given pointer p onto pcbFree list
-    pcb is no longer in use, being removed from queue*/ 
+/*given a pointer to a pcb, p, insert p onto the pcbFree list
+    since pcb is no longer in use, it is being removed from the queue.  nothing is returned*/ 
 void freePcb(pcb_PTR p){
     insertProcQ(&pcbFree_h, p);
 }
 
-/*allocated a pcb from the free list to the queue of active pcbs */
+/*allocated a pcb from the free list to the queue of active pcbs
+this method takes no paramteters and returns a pointer to the pcb that was just allocated onto the active queue */
 pcb_PTR allocPcb(){
     if (pcbFree_h == NULL){
         return NULL;
@@ -63,7 +66,8 @@ return temp;
 }
 
 /*initalizes the pcbFree list to contain all the elements of the static array of MAXPROC pcbs
-only called once during data initalization*/
+only called once during data initalization
+initPcbs takes no parameters and returns nothing*/
 void initPcbs(){
     static pcb_t pcbInit[MAXPROC];
     pcbFree_h = NULL;
@@ -74,12 +78,13 @@ void initPcbs(){
     }
 }
 
-/* returns pointer to the tail of an empty process queue */
+/* returns pointer to the tail of an empty process queue
+takes no parameters and returns a null pointer to a pcb */
 pcb_PTR mkEmptyProcQ(){
     return NULL;
 }
 
-/* given a pointer to a process queue, determines if that process queue is empty */
+/* given a pointer to a process queue, determines if that process queue is empty by returning true or false accordingly */
 int emptyProcQ(pcb_PTR tp){
     return (tp == NULL);
 }
@@ -117,7 +122,8 @@ void insertProcQ(pcb_PTR *tp, pcb_PTR p){
 
 }
 
-/*given the tail pointer to a process queue, remove the node from the head of that process queue*/
+/*given the tail pointer to a process queue, remove the node from the head of that process queue
+returns a pointer to the removed pcb*/
 pcb_PTR removeProcQ(pcb_PTR *tp){
     /*check to see if the given process queue is empty
     if there are no nodes in the queue, the head cannot be removed*/
@@ -129,7 +135,8 @@ pcb_PTR removeProcQ(pcb_PTR *tp){
 }
 
 /*given a pointer to the tail of a process queue and a pointer to a specific pcb, 
-this removes the specified pcb (p) from the queue pointed to by (tp)*/
+this removes the specified pcb (p) from the queue pointed to by (tp)
+returns a pointer to the removed pcb*/
 pcb_PTR outProcQ(pcb_PTR *tp, pcb_PTR p){
   pcb_PTR current = (*tp)->p_next;
    
@@ -180,7 +187,8 @@ int emptyChild(pcb_PTR p){
     return (p->p_child == NULL);
 }
 
-/*given a pointer to a pcb p and a pointer to a parent pcb, prnt, this adds the pcb p as a child to the pcb prnt */
+/*given a pointer to a pcb p and a pointer to a parent pcb, prnt, this adds the pcb p as a child to the pcb prnt
+does not return anything */
 void insertChild(pcb_PTR prnt, pcb_PTR p){
     
     /*check to see if prnt already has a child*/
@@ -209,7 +217,8 @@ void insertChild(pcb_PTR prnt, pcb_PTR p){
     }
 }
 
-/*given a pointer to a pcb p, remove the first child*/
+/*given a pointer to a pcb p, remove the first child of p
+removechild returns a pointer to the pcb that was removed*/
 pcb_PTR removeChild(pcb_PTR p){
     /* store the first child of p for future use */
     pcb_PTR currentChild = p->p_child;
@@ -244,7 +253,8 @@ pcb_PTR removeChild(pcb_PTR p){
     }   
 }
 
-/*given a pointer p to a child pcb, this removes p*/
+/*given a pointer p to a child pcb, this removes p
+this returns a pointer to the pcb that was just removed */
 pcb_PTR outChild(pcb_PTR p){
    /*store parent of p for further use */
     pcb_PTR parent = p->p_prnt;
