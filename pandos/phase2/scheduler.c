@@ -33,6 +33,8 @@ void scheduler(){
 			/* not sure if this is used to enable the interrupts or PLT */
 			unsigned int sendStatus = ALLON | IECON | IMON | TEBITON;
 
+			currentProc = currentProc->p_next;
+			LDST(&(temp->p_s));
 			WAIT();
 		}
 		/* there is a deadlock */
