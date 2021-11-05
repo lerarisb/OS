@@ -3,7 +3,7 @@ extern void test();
 #include "../h/types.h"
 #include "../phase1/asl.c"
 #include "../phase1/pcb.c"
-nclude "../scheduler.c"
+#include "../scheduler.c"
 
 /* nucleus initalization */
 
@@ -13,7 +13,7 @@ int processCount;
 pcb_ptr *currentProc;
 pcb_ptr *readyQueue;
 int softBlockCount;
-int DevSemaphore[?];
+int DevSemaphore[49];
 /* pseudo clock semaphore */
 	/* one semaphore for each eternal sub device */
 
@@ -34,7 +34,7 @@ void main(){
 
 	xxx->exception_handler = (memaddr) foobar;
 
-	/*set the stack pointer for Nucleus exceptio handler to top of
+	/*set the stack pointer for Nucleus exception handler to top of
 	nucleus stack page*/
 
 	processCount = 0;
@@ -43,7 +43,7 @@ void main(){
 	currentProc = NULL;
 	/*set device semaphores to 0*/
 
-	/*load system wide Unterval timer with 100 ms */
+	/*load system wide Interval timer with 100 ms */
 
 	allocPcb();
 	/*enable interrupts*/
@@ -74,3 +74,5 @@ void uTLB_RefillHandler(){
 	TLBWR();
 	LDST ((state_PTR) 0x0FFFF0000);
 }
+
+/*test*/
