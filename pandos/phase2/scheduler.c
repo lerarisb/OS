@@ -12,6 +12,16 @@ extern int softBlockCount;
 extern pcb_t *currentProc;
 extern pcb_t *readyQueue;
 
+
+/*use so you don't have to keep repeating this in other methods */
+contextSwitch(pcb_ptr p){
+	currentProc = p;
+	LDST(p->p_s);
+
+}
+
+
+
 /* Uses the round robin algorithm for each process that will be executed */
 void scheduler(){
 	/* temp variable for the pcb that will be removed */

@@ -19,6 +19,12 @@
 #define INTERVALTMR		0x10000020	
 #define TIMESCALEADDR	0x10000024
 
+#define RAMTOP = RAMBASEADDR + RAMBASESIZE
+
+#define GETEXECCODE = 0x1000.000C
+
+
+#define CREATEPROCESS = 1
 
 /* utility constants */
 #define	TRUE			    1
@@ -87,3 +93,4 @@
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
 
 #endif
+
