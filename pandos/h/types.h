@@ -92,7 +92,6 @@ typedef struct passupvector {
 
 
 
-
 #define	s_at	s_reg[0]
 #define	s_v0	s_reg[1]
 #define s_v1	s_reg[2]

@@ -63,6 +63,9 @@
 #define READY			    1
 #define BUSY			    3
 
+#define PASSUPVECTOR    0x0FFFF900
+#define KERNELSTACK     0x2000100
+
 /* device common COMMAND codes */
 #define RESET			    0
 #define ACK				    1
@@ -79,6 +82,13 @@
 /* Exceptions related constants */
 #define	PGFAULTEXCEPT	  0
 #define GENERALEXCEPT	  1
+
+/*Constants for bit management */
+#define ALLOFF = 00000000
+#define TEON = 08000000
+#define IEON = 00000400
+#define MASKON = 0000FF00
+
 
 
 /* operations */

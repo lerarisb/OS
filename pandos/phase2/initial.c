@@ -30,21 +30,26 @@ int main(){
 	initAsl();
 	
 
-
+	passupvector_t passUp = (passupvector_t) *PASSUPVECTOR;
 	/*populate Processor 0 Pass Up Vector*/
-	xxx->tlb_refillHandler = (memaddr) uTLB_RefillHandler
+	
+	passUp->tlb_refillHandler = (memaddr) uTLB_RefillHandler
 
 	/*set stack pointer ofr Nucleus TLB-Refill event 
 	handler to top of Nucleus Stack Page*/
+
+	passUp->tlb_refll_stackPtr = KERNELSTACK;
 
 	/*set Nucleus exception handler address to address of 
 	Level 3 Nucleus Function that is the entry point for exception 
 	and interrupt handling*/
 
-	xxx->exception_handler = (memaddr) foobar;
+	passUp->exception_handler = (memaddr) KERNELSTACK;
 
 	/*set the stack pointer for Nucleus exception handler to top of
 	nucleus stack page*/
+
+	passUp->exception_stackPtr = (memaddr) PASSUPVECTOR;
 
 	processCount = 0;
 	softBlockCount = 0;
@@ -59,36 +64,22 @@ int main(){
 	/*load system wide Interval timer with 100 ms */
 	LDIT(100);
 
-	allocPcb();
+	p = allocPcb();
+	insertProcQ(p);
 
 	
 
 	/*enable interrupts*/
 	/*enable processor local timer*/
 	/*kernel-mode on*/
+
+	s_status = ALLOFF | TEON | MASKON | IEON
 	
 	/*stack pointer set to RAMTOP*/
 	/*pcb set to address of test*/
 	p->p_s.s_sp = RAMTOP;
 	p->p_s.s_pc = p->p_s.s_tp = (memaddr)test p->p_s.s_status;
 
-
-	/*recursively set all process tree fields to NULL*/
-	void setNull(pcb_ptr p){
-		/*base case*/
-		if (p->p_child = null){
-			while (p->p_sib != null){
-				p = NULL;
-				p->p_sib
-
-			}
-		}
-	}
-
-	while (p->p_child != null){
-			pcb_ptr newP = p->p_child;
-
-	}
 
 	/*accumulated time field to 0*/
 	p_time = 0;
