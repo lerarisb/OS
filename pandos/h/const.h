@@ -64,7 +64,7 @@
 #define BUSY			    3
 
 #define PASSUPVECTOR    0x0FFFF900
-#define KERNELSTACK     0x2000100
+#define KERNELSTACK     0x20001000
 
 /* device common COMMAND codes */
 #define RESET			    0
@@ -84,10 +84,10 @@
 #define GENERALEXCEPT	  1
 
 /*Constants for bit management */
-#define ALLOFF = 00000000
-#define TEON = 08000000
-#define IEON = 00000400
-#define MASKON = 0000FF00
+#define ALLOFF = 0x00000000
+#define TEON = 0x08000000
+#define IEON = 0x00000010
+#define MASKON = 0x0000FF00
 
 
 

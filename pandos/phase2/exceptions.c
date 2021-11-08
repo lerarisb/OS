@@ -11,12 +11,7 @@
 void syscall(int exceptReason){
 
 	
-	/*increase pc by 4, since you have to do it in all syscalls */
-
-	state_t *exceptState;
-	exceptState->s_pc = (state_t*) 0x0FFF000
-	exceptState->s_v0 = 1;
-	exceptState->s_pc = exceptState->s_pc + 4;
+	
 
 
 	/*if in user-mode, trigger Program Trap Handler */
@@ -131,57 +126,24 @@ void syscall(int exceptReason){
 		int deviceNumber = currentProc->p_s.s_a2;
 		int readWrite = currentProc->p_s.s_a3;
 
-		/*need to figure out which device it is and then what is the associated semaphore */
+		
+		/*check to make sure it is a valid line number */
 
-		if (lineNumber == 1){
+		if (lineNumber > 3 && lineNumber < 7){
+			/*get int that acts as Device semaphore*/
+			/*this is what we need help with */
 
-		}
+			int semaphore = devSem[i];
 
-		if (lineNumber == 2){
+			/*perform V on it */
 
+			/*check to see if it needs to be blocked*/
+			if (sempahore <0){
+				softBlockCount++;
+				insertBlocked(&semaphore, currentProc);
+			}
 
-		}
-		if (lineNumber == 3){
-
-		}
-
-		if (lineNumber == 4){
-
-
-		}
-
-		f (lineNumber == 5){
-
-		}
-
-		if (lineNumber == 6){
-
-
-		}
-		if (lineNumber == 7){
-
-		}
-
-		if (lineNumber == 8){
-
-
-		}
-
-
-
-
-		insertBlocked(&semaphore, currentProc);
-		scheduler();
-
-		nucleus performs a V operation on nucleus maintained semaphore whenever that subdevice generates an interrupt/*
-		/*sub device's status word is returned in v0*/
-
-		if (devSem[i] < 0){
-			insertBlocked(&semaphore, currentProc);
-		}
-
-		else{
-			/*return control to the current process */
+			/*if it does not need to be blocked, load new state and go */
 			switchContext(currentProc);
 
 
@@ -232,6 +194,19 @@ void TLBHandler(){
 
 void ProgramTrapHandler(){
 
+}
+
+void PassUpOrDie(){
+
+}
+
+void (increasePC){
+	/*increase pc by 4, since you have to do it in certain syscalls */
+
+	state_t *exceptState;
+	exceptState->s_pc = (state_t*) 0x0FFF000
+	exceptState->s_v0 = 1;
+	exceptState->s_pc = exceptState->s_pc + 4;
 }
 
 
