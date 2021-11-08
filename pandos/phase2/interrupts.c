@@ -63,19 +63,16 @@ void interruptHandler(){
         /* disk dev is on */
         devInterruptH(DISK);
     }
-
     /* flash interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & FLASHINT) != 0){
         /* flash dev is on */
         devInterruptH(FLASH);
     }
-
     /* printer interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & PRINTERINT) != 0) {
         /* printer dev is on */
         devInterruptH(PRINTER);
     }
-
     /* terminal interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & TERMINT) != 0) {
         /* terminal dev is on */
