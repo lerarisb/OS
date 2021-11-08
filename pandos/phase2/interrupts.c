@@ -18,12 +18,10 @@ extern int semD[SEMNUM];
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
-
 	cpu_t stop_clock;
 	cpu_t time_left;
 	time_left = getTimer();
 	STCK(stop_clock);
-
 	/* PLT interrupt, means it is time to switch to next process */
 	if((((state_PTR)BIOSDATAPAGE)->s_cause & PLTINT) != 0){
 		if(currentProc != NULL){
@@ -44,89 +42,99 @@ void interruptHandler(){
 	/* pseudo clock tick interrupt */
 	if((((state_PTR)BIOSDATAPAGE)->s_cause & TIMERINT) != 0){
 		pcb_PTR proc;
-        LDIT(PSEUDOCLOCKTIME);
-        proc = removeBlocked(&semD[SEMNUM-1]); /*CLOCKSEM = semD[SEMNUM-1]*/
-        while(proc !=NULL){
-            insertProcQ(&readyQue, proc);
-            softBlockCount -= 1;
-            proc = removeBlocked(&semD[SEMNUM-1]); /*CLOCKSEM = semD[SEMNUM-1]*/
-        }
+       		LDIT(PSEUDOCLOCKTIME);
+        	proc = removeBlocked(&semD[SEMNUM-1]); 
+       		while(proc !=NULL){
+            		insertProcQ(&readyQue, proc);
+           	 	softBlockCount -= 1;
+           		proc = removeBlocked(&semD[SEMNUM-1]); 
+       		}
         /* set the semaphore to = 0 */
-        semD[SEMNUM-1] = 0; /*CLOCKSEM = semD[SEMNUM-1]*/
-        if(currentProc == NULL){
-            scheduler();
-        }
+       		semD[SEMNUM-1] = 0; 
+        	if(currentProc == NULL){
+            		scheduler();
+        	}
 	}
 
 	/* if it is not a PLT or pseudo clock interrupt and therefore a device interrupt */
 
-	/* Disk interrupt */
+	/* disk interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & DISKINT) != 0){
         /* disk dev is on */
         devInterruptH(DISK);
     }
 
-    /* Flash interrupt */
+    /* flash interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & FLASHINT) != 0){
         /* flash dev is on */
         devInterruptH(FLASH);
     }
 
-    /* Printer interrupt */
+    /* printer interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & PRINTERINT) != 0) {
         /* printer dev is on */
         devInterruptH(PRINTER);
     }
 
-    /* Terminal interrupt (special case) */
+    /* terminal interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & TERMINT) != 0) {
         /* terminal dev is on */
         devInterruptH(TERMINAL);
     }
 }
 
-/* Interrupt Handler for peripheral devices */
+/* interrupt Handler for peripheral devices */
 HIDDEN int devInterruptH(int devLine){
-	unsigned int bitMAP;
+    unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
 
-    /* Addressing */
+    /* getting the dev address */
     deviceRegister = (devregarea_t *) RAMBASEADDR;
     bitMAP = deviceRegister->interrupt_dev[devLine-DISK];
-
-    int device_number; /* interrupt device number */
-    int device_semaphore; /* interrupt device semaphore */
-    unsigned int intstatus; /* register status of the interrupting device */
+    /* interrupt device number */
+    int device_number; 
+    /* interrupt device semaphore */
+    int device_semaphore;
+    /* register status of the interrupting device */
+    unsigned int intstatus; 
     pcb_PTR p;
 
-    /* logic to determine which specific device number is causing an interrupt */
+    /* determine which device number is causing an interrupt */
     if((bitMAP & DEV0) != 0){
         device_number = 0;
-    }else if((bitMAP & DEV1) != 0){
+    }
+    else if((bitMAP & DEV1) != 0){
         device_number = 1;
-    }else if((bitMAP & DEV2) != 0){
+    }
+    else if((bitMAP & DEV2) != 0){
         device_number = 2;
-    }else if((bitMAP & DEV3) != 0){
+    }
+    else if((bitMAP & DEV3) != 0){
         device_number = 3;
-    }else if((bitMAP & DEV4) != 0){
+    }
+    else if((bitMAP & DEV4) != 0){
         device_number = 4;
-    }else if((bitMAP & DEV5) != 0){
+    }
+    else if((bitMAP & DEV5) != 0){
         device_number = 5;
-    }else if((bitMAP & DEV6) != 0){
+    }
+    else if((bitMAP & DEV6) != 0){
         device_number = 6;
-    }else{
+    }
+    else{
         device_number = 7;
     }
-
+	
     /* get device semaphore */
     device_semaphore = ((devLine - DISK) * DEVPERINT) + device_number;
-
-    /* For terminal interrupts */
+	
+    /* terminal interrupts */
     if(devLine == TERMINAL){
         intstatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
 
     /* if not a terminal device interrupt */
-    }else{
+    }
+    else{
         intstatus = ((deviceRegister->devreg[device_semaphore]).d_status);
         /* ACK the interrupt */
         (deviceRegister->devreg[device_semaphore]).d_command = ACK;
@@ -139,18 +147,21 @@ HIDDEN int devInterruptH(int devLine){
     if(semD[device_semaphore] <= 0) {
         p = removeBlocked(&(semD[device_semaphore]));
         if (p != NULL) {
-            p->p_s.s_v0 = intstatus; /* save status */
-            insertProcQ(&readyQue, p); /* insert the process onto the ready queue */
-            softBlockCount -= 1; /* update SBC*/
+	    /* save status */
+            p->p_s.s_v0 = intstatus;
+	    /* insert the process onto the ready queue */
+            insertProcQ(&readyQue, p);
+	    /* update SBC*/
+            softBlockCount -= 1; 
         }
     }
-    /* if no process is running, call the scheduler to set the next process */
+    /* if no process is running, call the scheduler */
     if(currentProc == NULL){
         scheduler();
     }
 }
 
-/* Gives device status from terminal read or write case */
+/* gives device status from terminal read or write case */
 HIDDEN int termInterruptH(int *devSem){
 	volatile devregarea_t *deviceRegister;
     unsigned int status;
@@ -161,10 +172,12 @@ HIDDEN int termInterruptH(int *devSem){
         status = deviceRegister->devreg[(*devSem)].t_transm_status;
         deviceRegister->devreg[(*devSem)].t_transm_command = ACK;
 
-    }else{ /* handle read case if not write case */
+    }
+    /* handle read case if not write case */
+    else{ 
         status = deviceRegister->devreg[(*devSem)].t_recv_status;
         deviceRegister->devreg[(*devSem)].t_recv_command = ACK;
-        /* update dev sema4 for the terminal read situation */
+        /* update devSem for the terminal read */
         (*devSem) = (*devSem) + DEVPERINT;
     }
     return(status);
@@ -175,7 +188,7 @@ void storeState(state_t *blocked, state_t *ready){
     for (int i = 0; i < STATEREGNUM; i++){
         ready->s_reg[i] = blocked->s_reg[i];
     }
-    /*Move all of the contents from the old state into the new state*/
+    /* move contents from the old state into the new state*/
     ready->s_entryHI = blocked->s_entryHI;
     ready->s_status = blocked->s_status;
     ready->s_pc = blocked->s_pc;
