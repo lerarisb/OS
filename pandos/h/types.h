@@ -90,6 +90,13 @@ typedef struct passupvector {
     unsigned int exception_stackPtr;
 } passupvector_t;
 
+/*process context */
+typedef struct context_t{
+	unsigned int c_stackPTR;
+					c_status;
+					c_pc;
+} context_t
+
 
 
 #define	s_at	s_reg[0]

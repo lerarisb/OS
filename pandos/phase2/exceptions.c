@@ -39,41 +39,19 @@ void syscall(int exceptReason){
 
 
 	/* if a0 = 2, terminate process recursively by calling freePcb*/
-	
-	
-
-
 	if (currentProc->p_s.s_a0 = 2){
-
-	pcb_PTR *temp = currentProc
-	
-	while (temp->p_child ! = NULL){
-		temp = temp->p_child;
-		while (temp->p_nextsib != NULL){
-			temp = p->next_sib;
-		}
-	}
-	freepcb(temp);
-	processCount = processCount - 1;
-		
-		while (temp->p_parent != NULL){
-		while (temp->prevSib != NULL){
-			temp = temp->p_prevSib;
-			freepcb(temp);
-			processCount = processCount - 1;
-		}
-		temp = temp->p_parent;
-	}
-	freepcb(temp);
-	processCount = processCount - 1;
-	}
-
-	
+	terminateProcess(currentProc);
 	scheduler()
 	}
 
 	/* if a0 = 3 , perform P*/
+	
+	
+
 	if (currentProc->p_s.s_a0 == 3){
+		
+		increasePC();
+		
 		/*physical address of semaphore goes in a1*/
 		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
 
@@ -113,6 +91,9 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 5 */
+	
+	increasePC();
+
 	if (currentProc->p_s.s_a0 = 5){
 		/* transitions from running to blocked state*/
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
@@ -133,9 +114,19 @@ void syscall(int exceptReason){
 			/*get int that acts as Device semaphore*/
 			/*this is what we need help with */
 
+			i = lineNumber * deviceNumber
+
+			/*if it is terminal, check to see if r/w is on and if so, treat as another device*/
+
+			if (lineNumber = 7){
+				if (readWrite = TRUE){
+					i = i + 8;
+				}
+
+			}
 			int semaphore = devSem[i];
 
-			/*perform V on it */
+			/*perform P on it */
 
 			/*check to see if it needs to be blocked*/
 			if (sempahore <0){
@@ -161,6 +152,9 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 7 */
+	
+	increasePC();
+
 	if (currentProc->p_s.s_a0 == 7){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
@@ -180,23 +174,37 @@ void syscall(int exceptReason){
 		currentProc->p_s.s_v0 = p_supportStruct;
 		return currentProc->p_s.s_v0;
 	}
+
+	/*if a0>=9 */
+	if (currentProc->p_s.s_a0 >=9){
+	PassUpOrDie(GENERALEXCEPT);
 }
 
-
-
-void devHandler(){
-
-}
 
 void TLBHandler(){
-
+	PassUpOrDie(PGFAULTEXCEPT);
 }
 
 void ProgramTrapHandler(){
-
+	PassUpOrDie(GENERALEXCEPT);
 }
 
-void PassUpOrDie(){
+void PassUpOrDie(int exception){
+	if (currentProc->p_supportStruct != NULL){
+		
+		/*store the saved exception state */
+		if (exception == PGFAULTEXCEPT){}
+		BIOSSTATE = currentProc->sup_exceptState[0];
+}
+		
+		if (exception == GENERALEXCEPT){
+			BIOSSTATE = currentProc->sup_exceptState[1];
+		}
+		
+		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
+		LDCXT(currentProc->c_stackPTR, currentProc->c_status, currentProc->c_pc);
+
+	}
 
 }
 
@@ -211,5 +219,60 @@ void (increasePC){
 
 
 
+void terminateProcess(pcb_Ptr *currentProcess){
+	
+	/*base case*/
+	if (currentProcess->p_child = NULL){
+		currentProcess = currentProcess->p_parent;
+		freepcb(removeChild(currentProcess));
 
+	}
+
+	else{
+		while (currentProcess->p_child != NULL){
+			currentProcess = currentProcess->p_child;
+		}
+	
+			removeChild(currentProcess);
+			termonateProcess(currentProcess);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+	pcb_PTR *temp = currentProc
+	
+	while (temp->p_child ! = NULL){
+		temp = temp->p_child;
+		while (temp->p_nextsib != NULL){
+			temp = p->next_sib;
+		}
+	}
+	freepcb(temp);
+	processCount = processCount - 1;
+		
+		while (temp->p_parent != NULL){
+		while (temp->prevSib != NULL){
+			temp = temp->p_prevSib;
+			freepcb(temp);
+			processCount = processCount - 1;
+		}
+		temp = temp->p_parent;
+	}
+	freepcb(temp);
+	processCount = processCount - 1;
+	}
+
+	
+	scheduler()
+	}
+
+}
 
