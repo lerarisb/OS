@@ -36,6 +36,7 @@ int main(){
 	initPcbs();
 	initASL();
 	
+	
 
 	passupvector_t *passUp = (passupvector_t*) PASSUPVECTOR;
 	/*populate Processor 0 Pass Up Vector*/
@@ -58,6 +59,9 @@ int main(){
 
 	passUp->exception_stackPtr = (memaddr) PASSUPVECTOR;
 
+
+
+
 	processCount = 0;
 	softBlockCount = 0;
 	readyQueue = mkEmptyProcQ();
@@ -70,11 +74,14 @@ int main(){
 		devSemaphore[i] = 0;
 	}
 
+	
+
 	/*load system wide Interval timer with 100 ms */
 	LDIT(100);
 
 	p = allocPcb();
 	insertProcQ(&readyQueue, p);
+	processCount++;
 
 	
 
@@ -91,6 +98,8 @@ int main(){
 	p->p_s.s_status;
 
 
+
+
 	/*accumulated time field to 0*/
 	p->p_time = 0;
 
@@ -100,8 +109,12 @@ int main(){
 	/*set Support Structure Pointer pointer to null*/
 	p->p_supportStruct = NULL;
 
+	debugB(1, 2, 3, 4);
+
 	/*call the scheduler*/
 	scheduler();
+
+	
 
 	return 0;
 
@@ -116,4 +129,9 @@ void genExceptionHandler(){
 	exceptReason = oldState->s_cause & GETEXECCODE>>CAUSESHIFT;
 	syscall(exceptReason);
 
+}
+
+void debugB(int a, int b, int c, int d){
+	a = a + 2;
+	b = b + 2;
 }

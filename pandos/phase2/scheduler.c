@@ -29,32 +29,75 @@ contextSwitch(pcb_PTR p){
 
 /* Uses the round robin algorithm for each process that will be executed */
 void scheduler(){
+
+
+	
 	/* temp variable for the pcb that will be removed */
 	pcb_t *temp;
 
 	/* removes pcb from head of ready queue and stores the pointer in temp */
 	temp = removeProcQ(&readyQueue);
 
+	if (temp != NULL){
+
+	/*store pointer to pcb in current field */
+	currentProc = temp;
+
+	/*load PLT*/
+	setTIMER(QUANTUM);
+
+	debugC(1, 2, 3, 4);
+
+	/*this is where our current problem is */
+	contextSwitch(currentProc);
+	
+
+	debugD(1, 2, 3,4);
+
+
+
+	
+
+}
+
+/*if it goes to the else, it means that no process was stored on the ReadyQueue */
+	else{
+
 	/* If the process count is 0 then the job is completed so you can halt */
 	if(processCount == 0){
 		HALT();
 	}
 
-	else if (processCount > 0){
+	/* if it makes it down here, we know the processCount > 0 */
+	else{
 		if(softBlockCount > 0){
-			/* need to set timer still */
+			/* need to set timer to a very large value */
+			setTIMER(MAXTIME);
 
-			/* enable all interrupts I believe */
-			/* not sure if this is used to enable the interrupts or PLT */
-			unsigned int sendStatus = ALLOFF | IECON | IMON | TEBITON;
+			/* set status register to enable interrupts */
+			currentProc->p_s.s_status = (ALLOFF | TEON | MASKON | IEON);
 
-			currentProc = currentProc->p_next;
-			LDST(&(temp->p_s));
-			WAIT();
 		}
 		/* there is a deadlock */
 		if(softBlockCount == 0){
 			PANIC();
-		}
+			}
 	}
 }
+
+}
+
+void debugC(int a, int b, int c, int d){
+	a++;
+	b++;
+}
+
+void debugD(int a, int b, int c, int d){
+	a++;
+	b++;
+}
+
+
+
+
+

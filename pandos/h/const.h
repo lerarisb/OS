@@ -117,6 +117,18 @@
 #define DEV6 0x00000040
 #define DEV7 0x00000080
 
+/*syscall constants */
+
+#define CREATETHREAD 1
+#define TERMINATETHREAD 2
+#define PASSERREN   3
+#define VERHOGEN 4
+#define WAITIO  5
+#define GETCPUTIME  6
+#define WAITCLOCK   7
+#define GETSUPPORTPTR   8
+
+
 #define PLTINT 0x00000200 /* clock 1 interrupt */
 #define TIMERINT 0x00000400 /* clock 2 interrupt */
 #define DISKINT 0x00000800  /* disk interrupt */
@@ -126,6 +138,9 @@
 #define TERMINT 0x00008000  /* terminal interrupt */
 
 #define PSEUDOCLOCKTIME 100000
+#define MAXTIME 0xFFFFFFFF
+#define QUANTUM 5000
+#define IOCLOCK 100000
 
 #define IMON    0x0000FF00      /* Interrupt Masked */
 #define IECON   0x00000001      /* Turn interrupts current ON */

@@ -33,11 +33,13 @@ void syscall(int exceptReason){
 
 
 	/*if in user-mode, trigger Program Trap Handler */
-
+	if (currentProc->p_s.s_status & USERON != 0){
+		ProgramTrapHandler();
+	}
 
 	/* if a0 = 1 */
 
-	if (currentProc->p_s.s_a0 == 1){
+	if (currentProc->p_s.s_a0 == CREATETHREAD){
 
 	pcb_t *newProc = allocPcb();
 	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
@@ -57,7 +59,7 @@ void syscall(int exceptReason){
 
 
 	/* if a0 = 2, terminate process recursively by calling freePcb*/
-	if (currentProc->p_s.s_a0 = 2){
+	if (currentProc->p_s.s_a0 = TERMINATETHREAD){
 	terminateProcess(currentProc);
 	scheduler();
 	}
@@ -66,7 +68,7 @@ void syscall(int exceptReason){
 	
 	
 
-	if (currentProc->p_s.s_a0 == 3){
+	if (currentProc->p_s.s_a0 == PASSERREN){
 		
 		increasePC();
 		
@@ -93,11 +95,16 @@ void syscall(int exceptReason){
 	/* if a0 = 4 */
 	/*perform V */
 		/*physical address of semaphore goes in a1*/
-	int semaphore;
-	if (currentProc->p_s.s_a0 == 4){
-		semaphore = currentProc->p_s.s_a1;
+	
+
+
+	if (currentProc->p_s.s_a0 == VERHOGEN){
+		
+		debugA(1, 2, 3, 4);
+
+		int semaphore = currentProc->p_s.s_a1;
 		semaphore++;
-	}
+	
 		if (semaphore < 0){
 			removeBlocked(semaphore);
 			insertProcQ(&readyQueue, currentProc);
@@ -106,6 +113,7 @@ void syscall(int exceptReason){
 		else{
 			contextSwitch(currentProc);
 		}
+	}
 		
 
 
@@ -113,7 +121,7 @@ void syscall(int exceptReason){
 	
 	increasePC();
 
-	if (currentProc->p_s.s_a0 = 5){
+	if (currentProc->p_s.s_a0 = WAITIO){
 		/* transitions from running to blocked state*/
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
 		/*blocks current Process on ASL*/
@@ -159,7 +167,7 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 6 */
-	if (currentProc->p_s.s_a0 == 6){
+	if (currentProc->p_s.s_a0 == GETCPUTIME){
 		/* get CPU time and place in v0 */
 	cpu_t endTOD;
 	cpu_t totaltime = endTOD + currentProc->p_time;
@@ -173,7 +181,7 @@ void syscall(int exceptReason){
 	
 	increasePC();
 
-	if (currentProc->p_s.s_a0 == 7){
+	if (currentProc->p_s.s_a0 == WAITCLOCK){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
 		/*blocks current process on ASL */
@@ -186,16 +194,21 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 8 */
-	if (currentProc->p_s.s_a0 == 8){
+	if (currentProc->p_s.s_a0 == GETSUPPORTPTR){
 		/*requests a pointer to current process's support structure*/
 		/*returns value of p_support struct */
 		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
 		return currentProc->p_s.s_v0;
 	}
 
+	/*if a0<1 */
+	if (currentProc->p_s.s_a0 <= 1){
+	ProgramTrapHandler(GENERALEXCEPT);
+	}
+
 	/*if a0>=9 */
-	if (currentProc->p_s.s_a0 >=9){
-	PassUpOrDie(GENERALEXCEPT);
+	if (currentProc->p_s.s_a0 >= 9){
+	ProgramTrapHandler(GENERALEXCEPT);
 	}
 }
 
@@ -250,4 +263,9 @@ void terminateProcess(pcb_t *currentProcess){
 	}
 }
 
+
+void debugA(int a, int b, int c, int d){
+	a = 42;
+	b = 21;
+}
 
