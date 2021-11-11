@@ -45,7 +45,7 @@
 #define DEVPERINT		  8		  /* devices per interrupt line */
 #define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */	
 #define DEVREGSIZE	  16 		/* device register size in bytes */
-#define SEM4DEV           (DEVINTNUM * DEVPERINT)
+#define SEM4DEV           (DEVINTNUM * DEVPERINT + 9)
 
 /* device register field number for non-terminal devices */
 #define STATUS			  0
