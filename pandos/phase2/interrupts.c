@@ -14,7 +14,10 @@ extern int softBlockCount;
 extern pcb_t *currentProc;
 extern pcb_t *readyQueue;
 extern cpu_t start_clock;
-extern int semD[SEMNUM];
+extern int devSemaphore[SEM4DEV];
+
+HIDDEN int devInterruptH(int devLine);
+HIDDEN int termInterruptH(int *devSem);
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
@@ -43,14 +46,14 @@ void interruptHandler(){
 	if((((state_PTR)BIOSDATAPAGE)->s_cause & TIMERINT) != 0){
 		pcb_PTR proc;
        		LDIT(PSEUDOCLOCKTIME);
-        	proc = removeBlocked(&semD[SEMNUM-1]); 
+        	proc = removeBlocked(&devSemaphore[SEM4DEV]); 
        		while(proc !=NULL){
-            		insertProcQ(&readyQue, proc);
+            		insertProcQ(&readyQueue, proc);
            	 	softBlockCount -= 1;
-           		proc = removeBlocked(&semD[SEMNUM-1]); 
+           		proc = removeBlocked(&devSemaphore[SEM4DEV]); 
        		}
         /* set the semaphore to = 0 */
-       		semD[SEMNUM-1] = 0; 
+       		devSemaphore[SEM4DEV] = 0; 
         	if(currentProc == NULL){
             		scheduler();
         	}
@@ -71,12 +74,12 @@ void interruptHandler(){
     /* printer interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & PRINTERINT) != 0) {
         /* printer dev is on */
-        devInterruptH(PRINTER);
+        devInterruptH(PRNT);
     }
     /* terminal interrupt */
     if((((state_PTR)BIOSDATAPAGE)->s_cause & TERMINT) != 0) {
         /* terminal dev is on */
-        devInterruptH(TERMINAL);
+        devInterruptH(TERM);
     }
 }
 
@@ -126,7 +129,7 @@ HIDDEN int devInterruptH(int devLine){
     device_semaphore = ((devLine - DISK) * DEVPERINT) + device_number;
 	
     /* terminal interrupts */
-    if(devLine == TERMINAL){
+    if(devLine == TERM){
         intstatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
 
     /* if not a terminal device interrupt */
@@ -138,16 +141,16 @@ HIDDEN int devInterruptH(int devLine){
     }
 
     /* V operation on the device semaphore */
-    semD[device_semaphore] = semD[device_semaphore] + 1;
+    devSemaphore[device_semaphore] = devSemaphore[device_semaphore] + 1;
 
     /* if already waited for i/o */
-    if(semD[device_semaphore] <= 0) {
-        p = removeBlocked(&(semD[device_semaphore]));
+    if(devSemaphore[device_semaphore] <= 0) {
+        p = removeBlocked(&(devSemaphore[device_semaphore]));
         if (p != NULL) {
 	    /* save status */
             p->p_s.s_v0 = intstatus;
 	    /* insert the process onto the ready queue */
-            insertProcQ(&readyQue, p);
+            insertProcQ(&readyQueue, p);
 	    /* update SBC*/
             softBlockCount -= 1; 
         }
@@ -182,7 +185,8 @@ HIDDEN int termInterruptH(int *devSem){
 
 /* Go through all the registers in the old state and place them into new state */
 void storeState(state_t *blocked, state_t *ready){
-    for (int i = 0; i < STATEREGNUM; i++){
+    int i;
+    for (i = 0; i < STATEREGNUM; i++){
         ready->s_reg[i] = blocked->s_reg[i];
     }
     /* move contents from the old state into the new state*/

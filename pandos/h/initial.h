@@ -5,10 +5,10 @@
 #define INITIAL
 
 extern int processCount;
-extern pcb_ptr *currentProc;
-extern pcb_ptr *readyQueue;
+extern pcb_t *currentProc;
+extern pcb_t *readyQueue;
 extern int softBlockCount;
-extern int DevSemaphore[devINT * DEVPERINT];
+extern int devSemaphore[DEVINTNUM * DEVPERINT];
 
 extern int main();
 extern void uTLB_RefillHandler();

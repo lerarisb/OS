@@ -19,9 +19,9 @@
 #define INTERVALTMR		0x10000020	
 #define TIMESCALEADDR	0x10000024
 
-#define RAMTOP = RAMBASEADDR + RAMBASESIZE
+#define RAMTOP  (RAMBASEADDR + RAMBASESIZE)
 
-#define GETEXECCODE = 0x1000.000C
+#define GETEXECCODE  0x1000000C
 
 
 #define CREATEPROCESS = 1
@@ -35,16 +35,17 @@
 #define NULL 			    ((void *)0xFFFFFFFF)
 
 /* device interrupts */
-#define DISKINT			  3
-#define FLASHINT 		  4
-#define NETWINT 		  5
-#define PRNTINT 		  6
-#define TERMINT			  7
+#define DISK			  3
+#define FLASH 		  4
+#define NET 		  5
+#define PRNT 		  6
+#define TERM			  7
 
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
 #define DEVREGLEN		  4		  /* device register field length in bytes, and regs per dev */	
 #define DEVREGSIZE	  16 		/* device register size in bytes */
+#define SEM4DEV           (DEVINTNUM * DEVPERINT)
 
 /* device register field number for non-terminal devices */
 #define STATUS			  0
@@ -92,6 +93,8 @@
 #define MASKON      0x0000FF00
 
 
+#define CAUSESHIFT  2
+
 
 /* operations */
 #define	MIN(A,B)		((A) < (B) ? A : B)
@@ -103,6 +106,26 @@
 
 /* Macro to read the TOD clock */
 #define STCK(T) ((T) = ((* ((cpu_t *) TODLOADDR)) / (* ((cpu_t *) TIMESCALEADDR))))
+
+
+#define DEV0 0x00000001
+#define DEV1 0x00000002
+#define DEV2 0x00000004
+#define DEV3 0x00000008
+#define DEV4 0x00000010
+#define DEV5 0x00000020
+#define DEV6 0x00000040
+#define DEV7 0x00000080
+
+#define PLTINT 0x00000200 /* clock 1 interrupt */
+#define TIMERINT 0x00000400 /* clock 2 interrupt */
+#define DISKINT 0x00000800  /* disk interrupt */
+#define FLASHINT 0x00001000  /* flash interrupt */
+#define NETWORKINT 0x00002000   /* network interrupt */
+#define PRINTERINT 0x00004000  /* printer interrupt */
+#define TERMINT 0x00008000  /* terminal interrupt */
+
+#define PSEUDOCLOCKTIME 100000
 
 #endif
 

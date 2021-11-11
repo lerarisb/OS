@@ -17,7 +17,6 @@
 #include "../h/interrupts.h"
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
-#include "../h/libumps.h"
 
 void syscall(int exceptReason){
 
@@ -230,7 +229,7 @@ void (increasePC){
 
 
 
-void terminateProcess(pcb_Ptr *currentProcess){
+void terminateProcess(pcb_t *currentProcess){
 	
 	/*base case*/
 	if (currentProcess->p_child = NULL){

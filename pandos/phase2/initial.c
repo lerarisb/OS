@@ -6,7 +6,7 @@
 #include "../h/interrupts.h"
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
-#include "../h/libumps.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 
 extern void test();
@@ -16,12 +16,12 @@ extern void test();
 /* declare global variables */
 
 int processCount;
-pcb_ptr *currentProc;
-pcb_ptr *readyQueue;
+pcb_t *currentProc;
+pcb_t *readyQueue;
 int softBlockCount;
-int DevSemaphore[devINT * DEVPERINT];
+int devSemaphore[SEM4DEV];
 
-#define clockSem;
+#define clockSem devSemaphore[SEM4DEV]
 
 /* pseudo clock semaphore */
 	/* one semaphore for each eternal sub device */
@@ -33,13 +33,13 @@ int main(){
 	
 
 	initPcbs();
-	initAsl();
+	initASl();
 	
 
-	passupvector_t passUp = (passupvector_t) *PASSUPVECTOR;
+	passupvector_t *passUp = (passupvector_t*) PASSUPVECTOR;
 	/*populate Processor 0 Pass Up Vector*/
 	
-	passUp->tlb_refillHandler = (memaddr) uTLB_RefillHandler
+	passUp->tlb_refll_handler = (memaddr) uTLB_RefillHandler;
 
 	/*set stack pointer ofr Nucleus TLB-Refill event 
 	handler to top of Nucleus Stack Page*/
@@ -61,9 +61,11 @@ int main(){
 	softBlockCount = 0;
 	readyQueue = mkEmptyProcQ();
 	currentProc = NULL;
+	pcb_PTR p;
 
 	/*set device semaphores to 0*/
-	for (int i, i < DEVINT * DEVPERINT + 1){
+	int i;
+	for (i=0; i < SEM4DEV; i++){
 		devSemaphore[i] = 0;
 	}
 
@@ -71,7 +73,7 @@ int main(){
 	LDIT(100);
 
 	p = allocPcb();
-	insertProcQ(p);
+	insertProcQ(&readyQueue, p);
 
 	
 
@@ -79,22 +81,23 @@ int main(){
 	/*enable processor local timer*/
 	/*kernel-mode on*/
 
-	s_status = ALLOFF | TEON | MASKON | IEON
+	p->p_s.s_status = (ALLOFF | TEON | MASKON | IEON);
 	
 	/*stack pointer set to RAMTOP*/
 	/*pcb set to address of test*/
 	p->p_s.s_sp = RAMTOP;
-	p->p_s.s_pc = p->p_s.s_tp = (memaddr)test p->p_s.s_status;
+	p->p_s.s_pc = (memaddr) test; 
+	p->p_s.s_status;
 
 
 	/*accumulated time field to 0*/
-	p_time = 0;
+	p->p_time = 0;
 
 	/*set blocking semaphore address to NULL*/
-	p_semAdd = NULL;
+	p->p_semAdd = NULL;
 
 	/*set Support Structure Pointer pointer to null*/
-	p_supportStruct = NULL;
+	p->p_supportStruct = NULL;
 
 	/*call the scheduler*/
 	scheduler();
@@ -111,14 +114,12 @@ void uTLB_RefillHandler(){
 }
 
 void genExceptionHandler(){
-	pcb_ptr oldstate;
+	state_PTR oldState;
 	int exceptReason;
 
-
-
 	/*or bits together to determine cause*/
-	oldState = BIOSDATAPAGE
-	exceptReason = oldstate->s_cause & getExecCode>>causeShift
+	oldState = (state_PTR) BIOSDATAPAGE;
+	exceptReason = oldState->s_cause & GETEXECCODE>>CAUSESHIFT;
 	syscall(exceptReason);
 
 }
