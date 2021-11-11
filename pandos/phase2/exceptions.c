@@ -41,7 +41,7 @@ void syscall(int exceptReason){
 
 	if (currentProc->p_s.s_a0 == 1){
 
-	pcb_PTR *newProc = allocPcb();
+	pcb_t *newProc = allocPcb();
 	newProc->p_s = s_a1;
 
 	/*init newProc according to parameters in a0 and a1*/
@@ -221,7 +221,9 @@ void PassUpOrDie(int exception){
 		}
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
-		LDCXT(currentProc->c_stackPTR, currentProc->c_status, currentProc->c_pc);
+		LDCXT(currentProc->p_supportStruct->sup_exceptContext[exception].c_stackPtr,
+		currentProc->p_supportStruct->sup_exceptContext[exception].c_status, 
+		currentProc->p_supportStruct->sup_exceptContext[exception].c_pc);
 
 	}
 
