@@ -212,13 +212,8 @@ void PassUpOrDie(int exception){
 	if (currentProc->p_supportStruct != NULL){
 		
 		/*store the saved exception state */
-		if (exception == PGFAULTEXCEPT){}
-		BIOSDATAPAGE = currentProc->sup_exceptState[0];
-}
-		
-		if (exception == GENERALEXCEPT){
-			BIOSDATAPAGE = currentProc->sup_exceptState[1];
-		}
+		currentProc->p_supportStruct_sup_exceptState[exception] = BIOSDATAPAGE;
+
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
 		LDCXT(currentProc->p_supportStruct->sup_exceptContext[exception].c_stackPtr,
