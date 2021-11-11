@@ -127,5 +127,10 @@
 
 #define PSEUDOCLOCKTIME 100000
 
+#define IMON    0x0000FF00      /* Interrupt Masked */
+#define IECON   0x00000001      /* Turn interrupts current ON */
+#define TEBITON 0x08000000      /*Timer enabled bit ON */
+
+
 #endif
 
