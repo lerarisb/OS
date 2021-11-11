@@ -30,10 +30,6 @@ void increasePC(){
 
 void syscall(int exceptReason){
 
-	
-	
-
-
 	/*if in user-mode, trigger Program Trap Handler */
 
 
@@ -196,7 +192,11 @@ void syscall(int exceptReason){
 	/*if a0>=9 */
 	if (currentProc->p_s.s_a0 >=9){
 	PassUpOrDie(GENERALEXCEPT);
+	}
 }
+
+
+
 
 
 void TLBHandler(){
@@ -242,9 +242,8 @@ void terminateProcess(pcb_t *currentProcess){
 		}
 	
 			removeChild(currentProcess);
-			termonateProcess(currentProcess);
+			terminateProcess(currentProcess);
 	}
 }
 
-}
 
