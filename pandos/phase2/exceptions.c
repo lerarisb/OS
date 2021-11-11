@@ -42,15 +42,14 @@ void syscall(int exceptReason){
 	if (currentProc->p_s.s_a0 == 1){
 
 	pcb_PTR *newProc = allocPcb();
-	newproc->p_s = a1;
+	newProc->p_s = s_a1;
 
 	/*init newProc according to parameters in a0 and a1*/
 	/*newProc->p_s = a1 p_s*/
 	/*supportStruct*/
 	
 	insertChild(newProc, currentProc);
-	newProc ->p_supportStruct = 
-	insertprocQ(readyQueue, newProc);
+	newProc ->p_supportStruct = insertprocQ(readyQueue, newProc);
 	processCount++;
 	
 	newProc->p_time = 0;
@@ -61,7 +60,7 @@ void syscall(int exceptReason){
 	/* if a0 = 2, terminate process recursively by calling freePcb*/
 	if (currentProc->p_s.s_a0 = 2){
 	terminateProcess(currentProc);
-	scheduler()
+	scheduler();
 	}
 
 	/* if a0 = 3 , perform P*/
@@ -76,7 +75,7 @@ void syscall(int exceptReason){
 		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
 
 		/*first, decrement integer*/
-		int semaphore = currentProc->p_s.s_a1
+		int semaphore = currentProc->p_s.s_a1;
 		semaphore--;
 
 		
@@ -100,7 +99,7 @@ void syscall(int exceptReason){
 		semaphore++;
 
 		if (semaphore < 0){
-			removeblocked(semaphore);
+			removeBlocked(semaphore);
 			insertprocQ(&readyQueue, currentProc);
 		}
 
@@ -134,7 +133,7 @@ void syscall(int exceptReason){
 			/*get int that acts as Device semaphore*/
 			/*this is what we need help with */
 
-			i = lineNumber * deviceNumber
+			int i = lineNumber * deviceNumber;
 
 			/*if it is terminal, check to see if r/w is on and if so, treat as another device*/
 
@@ -184,14 +183,14 @@ void syscall(int exceptReason){
 			insertBlocked(&clockSem, currentProc);
 		}
 		
-		scheduler()
+		scheduler();
 	}
 
 	/* if a0 = 8 */
-	if (currentProc->p_s.s_a0 = 8){
+	if (currentProc->p_s.s_a0 == 8){
 		/*requests a pointer to current process's support structure*/
 		/*returns value of p_support struct */
-		currentProc->p_s.s_v0 = p_supportStruct;
+		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
 		return currentProc->p_s.s_v0;
 	}
 
@@ -214,11 +213,11 @@ void PassUpOrDie(int exception){
 		
 		/*store the saved exception state */
 		if (exception == PGFAULTEXCEPT){}
-		BIOSSTATE = currentProc->sup_exceptState[0];
+		BIOSDATAPAGE = currentProc->sup_exceptState[0];
 }
 		
 		if (exception == GENERALEXCEPT){
-			BIOSSTATE = currentProc->sup_exceptState[1];
+			BIOSDATAPAGE = currentProc->sup_exceptState[1];
 		}
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
