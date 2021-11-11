@@ -18,6 +18,16 @@
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
 
+void increasePC(){
+	/*increase pc by 4, since you have to do it in certain syscalls */
+
+	state_t *exceptState;
+	exceptState->s_pc = (state_t*) 0x0FFF000;
+	exceptState->s_v0 = 1;
+	exceptState->s_pc = exceptState->s_pc + 4;
+}
+
+
 void syscall(int exceptReason){
 
 	
@@ -218,14 +228,7 @@ void PassUpOrDie(int exception){
 
 }
 
-void (increasePC){
-	/*increase pc by 4, since you have to do it in certain syscalls */
 
-	state_t *exceptState;
-	exceptState->s_pc = (state_t*) 0x0FFF000
-	exceptState->s_v0 = 1;
-	exceptState->s_pc = exceptState->s_pc + 4;
-}
 
 
 
@@ -233,7 +236,7 @@ void terminateProcess(pcb_t *currentProcess){
 	
 	/*base case*/
 	if (currentProcess->p_child = NULL){
-		currentProcess = currentProcess->p_parent;
+		currentProcess = currentProcess->p_prnt;
 		freepcb(removeChild(currentProcess));
 
 	}
@@ -246,5 +249,7 @@ void terminateProcess(pcb_t *currentProcess){
 			removeChild(currentProcess);
 			termonateProcess(currentProcess);
 	}
+}
+
 }
 
