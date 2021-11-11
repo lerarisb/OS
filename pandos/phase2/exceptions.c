@@ -41,7 +41,7 @@ void syscall(int exceptReason){
 
 	if (currentProc->p_s.s_a0 == CREATETHREAD){
 
-	pcb_PTR *newProc = allocPcb();
+	pcb_t *newProc = allocPcb();
 	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
 
 	/*init newProc according to parameters in a0 and a1*/
@@ -244,7 +244,7 @@ void PassUpOrDie(int exception){
 
 
 
-void terminateProcess(pcb_PTR *currentProcess){
+void terminateProcess(pcb_t *currentProcess){
 	
 	/*base case*/
 	if (currentProcess->p_child = NULL){
