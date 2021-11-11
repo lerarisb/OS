@@ -131,6 +131,7 @@
 #define IECON   0x00000001      /* Turn interrupts current ON */
 #define TEBITON 0x08000000      /*Timer enabled bit ON */
 
+#define USERON  0x00000008  /* user mode on */
 
 #endif
 
