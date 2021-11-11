@@ -30,10 +30,6 @@ void increasePC(){
 
 void syscall(int exceptReason){
 
-	
-	
-
-
 	/*if in user-mode, trigger Program Trap Handler */
 
 
@@ -197,7 +193,11 @@ void syscall(int exceptReason){
 	/*if a0>=9 */
 	if (currentProc->p_s.s_a0 >=9){
 	PassUpOrDie(GENERALEXCEPT);
+	}
 }
+
+
+
 
 
 void TLBHandler(){
@@ -212,7 +212,7 @@ void PassUpOrDie(int exception){
 	if (currentProc->p_supportStruct != NULL){
 		
 		/*store the saved exception state */
-		currentProc->p_supportStruct_sup_exceptState[exception] = BIOSDATAPAGE;
+		currentProc->p_supportStruct->sup_exceptState[exception] = BIOSDATAPAGE;
 
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
@@ -243,9 +243,8 @@ void terminateProcess(pcb_t *currentProcess){
 		}
 	
 			removeChild(currentProcess);
-			termonateProcess(currentProcess);
+			terminateProcess(currentProcess);
 	}
 }
 
-}
 
