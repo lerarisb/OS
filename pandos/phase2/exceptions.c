@@ -144,7 +144,7 @@ void syscall(int exceptReason){
 			/*perform P on it */
 
 			/*check to see if it needs to be blocked*/
-			if (sempahore <0){
+			if (semaphore <0){
 				softBlockCount++;
 				insertBlocked(&semaphore, currentProc);
 			}

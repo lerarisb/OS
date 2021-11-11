@@ -21,7 +21,7 @@ pcb_t *readyQueue;
 int softBlockCount;
 int devSemaphore[SEM4DEV];
 
-#define clockSem devSemaphore[SEM4DEV]
+#define clockSem devSemaphore[SEM4DEV - 1]
 
 /* pseudo clock semaphore */
 	/* one semaphore for each eternal sub device */
