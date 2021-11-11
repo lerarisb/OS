@@ -11,7 +11,6 @@
 
 typedef signed int cpu_t;
 
-
 typedef unsigned int memaddr;
 
 
@@ -52,7 +51,7 @@ typedef struct pcb_t{
     cpu_t               p_time;
     int                 *p_semAdd;
 
-/* support layer info page 8 not included because of error */
+    struct support_t	*p_supportStruct;
 
 } pcb_t, *pcb_PTR;
 
@@ -92,11 +91,20 @@ typedef struct passupvector {
 
 /*process context */
 typedef struct context_t{
-	unsigned int c_stackPTR;
-					c_status;
+	unsigned int    c_stackPtr,
+					c_status,
 					c_pc;
-} context_t
+} context_t;
 
+typedef struct support_t {
+    int         sup_asid;           /* Process Id (asid)   */
+    state_t     sup_exceptState[2]; /* stored excpt states */
+    context_t   sup_exceptContext[2];/* pass up contexts    */
+} support_t;
+
+/* Exceptions related constants */
+#define PGFAULTEXCEPT 0
+#define GENERALEXCEPT 1
 
 
 #define	s_at	s_reg[0]

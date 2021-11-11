@@ -1,9 +1,15 @@
-extern void test();
 #include "../h/const.h"
 #include "../h/types.h"
-#include "../phase1/asl.c"
-#include "../phase1/pcb.c"
-#include "../scheduler.c"
+#include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/initial.h"
+#include "../h/interrupts.h"
+#include "../h/exceptions.h"
+#include "../h/scheduler.h"
+#include "../h/libumps.h"
+
+
+extern void test();
 
 /* nucleus initalization */
 

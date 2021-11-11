@@ -69,6 +69,8 @@
 /* device common COMMAND codes */
 #define RESET			    0
 #define ACK				    1
+#define ON                  1
+#define OFF                 0
 
 /* Memory related constants */
 #define KSEG0           0x00000000
@@ -84,10 +86,10 @@
 #define GENERALEXCEPT	  1
 
 /*Constants for bit management */
-#define ALLOFF = 0x00000000
-#define TEON = 0x08000000
-#define IEON = 0x00000010
-#define MASKON = 0x0000FF00
+#define ALLOFF      0x00000000
+#define TEON        0x08000000
+#define IEON        0x00000010
+#define MASKON      0x0000FF00
 
 
 

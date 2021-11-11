@@ -8,6 +8,17 @@
 
 /*for code 8, go to syscall exception handler*/
 
+
+#include "../h/const.h"
+#include "../h/types.h"
+#include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/initial.h"
+#include "../h/interrupts.h"
+#include "../h/exceptions.h"
+#include "../h/scheduler.h"
+#include "../h/libumps.h"
+
 void syscall(int exceptReason){
 
 	
