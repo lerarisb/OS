@@ -8,6 +8,7 @@
 #include "../h/interrupts.h"
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 extern int processCount;
 extern int softBlockCount;
@@ -23,7 +24,7 @@ HIDDEN int termInterruptH(int *devSem);
 void interruptHandler(){
 	cpu_t stop_clock;
 	cpu_t time_left;
-	time_left = getTimer();
+	time_left = getTIMER();
 	STCK(stop_clock);
 	/* PLT interrupt, means it is time to switch to next process */
 	if((((state_PTR)BIOSDATAPAGE)->s_cause & PLTINT) != 0){
@@ -194,5 +195,4 @@ void storeState(state_t *blocked, state_t *ready){
     ready->s_status = blocked->s_status;
     ready->s_pc = blocked->s_pc;
     ready->s_cause = blocked->s_cause;
-
 }

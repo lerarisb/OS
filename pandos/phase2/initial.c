@@ -20,6 +20,7 @@ pcb_t *currentProc;
 pcb_t *readyQueue;
 int softBlockCount;
 int devSemaphore[SEM4DEV];
+cpu_t start_clock;
 
 #define clockSem devSemaphore[SEM4DEV - 1]
 
@@ -33,7 +34,7 @@ int main(){
 	
 
 	initPcbs();
-	initASl();
+	initASL();
 	
 
 	passupvector_t *passUp = (passupvector_t*) PASSUPVECTOR;
@@ -104,13 +105,6 @@ int main(){
 
 	return 0;
 
-}
-
-void uTLB_RefillHandler(){
-	setENTRYHI( 0x80000000);
-	setENTRYLO(0x00000000);
-	TLBWR();
-	LDST ((state_PTR) 0x0FFFF0000);
 }
 
 void genExceptionHandler(){

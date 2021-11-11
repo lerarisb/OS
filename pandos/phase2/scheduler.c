@@ -3,8 +3,13 @@
 
 #include "../h/const.h"
 #include "../h/types.h"
-#include "../h/asl.h"
 #include "../h/pcb.h"
+#include "../h/asl.h"
+#include "../h/initial.h"
+#include "../h/interrupts.h"
+#include "../h/exceptions.h"
+#include "../h/scheduler.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 /* Variables used from initial.c */
 extern int processCount;
@@ -16,7 +21,7 @@ extern pcb_t *readyQueue;
 /*use so you don't have to keep repeating this in other methods */
 contextSwitch(pcb_PTR p){
 	currentProc = p;
-	LDST(p->p_s);
+	LDST(&(p->p_s));
 
 }
 

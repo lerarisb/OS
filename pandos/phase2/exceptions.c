@@ -17,6 +17,7 @@
 #include "../h/interrupts.h"
 #include "../h/exceptions.h"
 #include "../h/scheduler.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 void increasePC(){
 	/*increase pc by 4, since you have to do it in certain syscalls */
@@ -30,6 +31,7 @@ void increasePC(){
 
 void syscall(int exceptReason){
 
+
 	/*if in user-mode, trigger Program Trap Handler */
 
 
@@ -38,14 +40,15 @@ void syscall(int exceptReason){
 	if (currentProc->p_s.s_a0 == 1){
 
 	pcb_t *newProc = allocPcb();
-	newProc->p_s = s_a1;
+	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
 
 	/*init newProc according to parameters in a0 and a1*/
 	/*newProc->p_s = a1 p_s*/
 	/*supportStruct*/
 	
 	insertChild(newProc, currentProc);
-	newProc ->p_supportStruct = insertprocQ(readyQueue, newProc);
+	storeState(currentProc->p_s.s_a2, newProc->p_supportStruct);
+	insertProcQ(&readyQueue, newProc);
 	processCount++;
 	
 	newProc->p_time = 0;
@@ -82,7 +85,7 @@ void syscall(int exceptReason){
 
 		else{
 			/*return control to the current process */
-			switchContext(currentProc);
+			contextSwitch(currentProc);
 		}
 
 	}
@@ -90,17 +93,18 @@ void syscall(int exceptReason){
 	/* if a0 = 4 */
 	/*perform V */
 		/*physical address of semaphore goes in a1*/
+	int semaphore;
 	if (currentProc->p_s.s_a0 == 4){
-		int semaphore = currentProc->p_s.s_a1;
+		semaphore = currentProc->p_s.s_a1;
 		semaphore++;
 	}
 		if (semaphore < 0){
 			removeBlocked(semaphore);
-			insertprocQ(&readyQueue, currentProc);
+			insertProcQ(&readyQueue, currentProc);
 		}
 
 		else{
-			switchContext(currentProc);
+			contextSwitch(currentProc);
 		}
 		
 
@@ -139,7 +143,7 @@ void syscall(int exceptReason){
 				}
 
 			}
-			int semaphore = devSem[i];
+			int semaphore = devSemaphore[i];
 
 			/*perform P on it */
 
@@ -150,7 +154,7 @@ void syscall(int exceptReason){
 			}
 
 			/*if it does not need to be blocked, load new state and go */
-			switchContext(currentProc);
+			contextSwitch(currentProc);
 		}
 	}
 
@@ -173,9 +177,9 @@ void syscall(int exceptReason){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
 		/*blocks current process on ASL */
-		if (clockSem < 0){
+		if (devSemaphore[SEM4DEV - 1] < 0){
 			processCount++;
-			insertBlocked(&clockSem, currentProc);
+			insertBlocked(&(devSemaphore[SEM4DEV - 1]), currentProc);
 		}
 		
 		scheduler();
@@ -232,7 +236,7 @@ void terminateProcess(pcb_t *currentProcess){
 	/*base case*/
 	if (currentProcess->p_child = NULL){
 		currentProcess = currentProcess->p_prnt;
-		freepcb(removeChild(currentProcess));
+		freePcb(removeChild(currentProcess));
 
 	}
 
