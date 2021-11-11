@@ -15,11 +15,11 @@
 extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
-extern pcb_t *readyQueue;
+extern pcb_t*readyQueue;
 
 
 /*use so you don't have to keep repeating this in other methods */
-contextSwitch(pcb_PTR p){
+contextSwitch(pcb_t *p){
 	currentProc = p;
 	LDST(&(p->p_s));
 
