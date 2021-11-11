@@ -8,7 +8,7 @@ extern int processCount;
 extern pcb_t *currentProc;
 extern pcb_t *readyQueue;
 extern int softBlockCount;
-extern int devSemaphore[DEVINTNUM * DEVPERINT];
+extern int devSemaphore[SEM4DEV];
 
 extern int main();
 extern void uTLB_RefillHandler();
