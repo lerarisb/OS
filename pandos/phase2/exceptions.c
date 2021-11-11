@@ -97,7 +97,7 @@ void syscall(int exceptReason){
 	if (currentProc->p_s.s_a0 == 4){
 		int semaphore = currentProc->p_s.s_a1;
 		semaphore++;
-
+	}
 		if (semaphore < 0){
 			removeBlocked(semaphore);
 			insertprocQ(&readyQueue, currentProc);
@@ -107,7 +107,7 @@ void syscall(int exceptReason){
 			switchContext(currentProc);
 		}
 		
-	}
+
 
 	/* if a0 = 5 */
 	
@@ -155,14 +155,13 @@ void syscall(int exceptReason){
 
 			/*if it does not need to be blocked, load new state and go */
 			switchContext(currentProc);
-
-
+		}
 	}
 
 	/* if a0 = 6 */
 	if (currentProc->p_s.s_a0 == 6){
 		/* get CPU time and place in v0 */
-	cput_t endTOD;
+	cpu_t endTOD;
 	cpu_t totaltime = endTOD + currentProc->p_time;
 	currentProc->p_s.s_v0 = totaltime;
 
@@ -212,7 +211,7 @@ void PassUpOrDie(int exception){
 	if (currentProc->p_supportStruct != NULL){
 		
 		/*store the saved exception state */
-		currentProc->p_supportStruct_sup_exceptState[exception] = BIOSDATAPAGE;
+		currentProc->p_supportStruct->sup_exceptState[exception] = BIOSDATAPAGE;
 
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
