@@ -19,10 +19,13 @@ extern pcb_t*readyQueue;
 
 
 /*use so you don't have to keep repeating this in other methods */
-contextSwitch(pcb_t *p){
-	currentProc = p;
-	LDST(&(currentProc->p_s));
+void contextSwitch(pcb_PTR p){
 	debugE(1, 2, 3, 4);
+	currentProc = p;
+	LDST(&(p->p_s));
+
+	
+	
 
 
 }

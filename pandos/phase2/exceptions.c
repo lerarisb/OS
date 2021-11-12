@@ -34,7 +34,7 @@ void syscall(){
 		ProgramTrapHandler();
 	}
 
-
+	
 
 	/* if a0 = 1 */
 	if (exception_state->s_a0 == CREATETHREAD){
@@ -43,8 +43,6 @@ void syscall(){
 	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
 
 	/*init newProc according to parameters in a0 and a1*/
-	/*newProc->p_s = a1 p_s*/
-	/*supportStruct*/
 	
 	insertChild(newProc, currentProc);
 	storeState(currentProc->p_s.s_a2, newProc->p_supportStruct);
@@ -55,10 +53,10 @@ void syscall(){
 	newProc->p_semAdd = 0;
 }
 
-	
+	debugRegister(currentProc->p_s.s_a0);
 
 	/* if a0 = 2, terminate process recursively by calling freePcb*/
-	if (exception_state->s_a0 = TERMINATETHREAD){
+	if (exception_state->s_a0 == TERMINATETHREAD){
 	debugSyscall(1, 2, 3, 4);
 	terminateProcess(currentProc);
 	scheduler();
@@ -96,22 +94,24 @@ void syscall(){
 		/*physical address of semaphore goes in a1*/
 	
 
-	debugVerhogen(1, 2, 3, 4);
+	
 	if (exception_state->s_a0 == VERHOGEN){
 		
-		debugA(1, 2, 3, 4);
+		pcb_t *temp;
 
-		int semaphore = currentProc->p_s.s_a1;
-		semaphore++;
+		int *semaphore = (int *) currentProc->p_s.s_a1;
+		(*semaphore)++;
+
+
 	
-		if (semaphore < 0){
-			removeBlocked(semaphore);
-			insertProcQ(&readyQueue, currentProc);
+		if ((*semaphore) <= 0){
+			temp = removeBlocked(semaphore);
+			if (temp != NULL){
+			insertProcQ(&readyQueue, temp);
 		}
-
-		else{
+	}
 			contextSwitch(currentProc);
-		}
+	
 	}
 		
 
@@ -276,6 +276,10 @@ void debugVerhogen(int a, int b, int c, int d){
 void debugSyscall(int a, int b, int c, int d){
 	a = 42;
 	b = 21;
+}
+
+void debugRegister(state_t *test){
+	int i = 1;
 }
 
 

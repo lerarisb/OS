@@ -70,7 +70,7 @@ int main(){
 
 	/*set device semaphores to 0*/
 	int i;
-	for (i=0; i < SEM4DEV; i++){
+	for (i=0; i < SEM4DEV - 1; i++){
 		devSemaphore[i] = 0;
 	}
 
@@ -81,6 +81,7 @@ int main(){
 
 	p = allocPcb();
 	
+	if (p != NULL){
 	/*enable interrupts*/
 	/*enable processor local timer*/
 	/*kernel-mode on*/
@@ -117,8 +118,12 @@ int main(){
 
 	
 
-	return 0;
-
+	
+}
+else{
+	PANIC();
+}
+return 0;
 }
 
 void genExceptionHandler(){
