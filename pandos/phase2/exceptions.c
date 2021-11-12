@@ -19,7 +19,7 @@
 #include "../h/scheduler.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
-void syscall(int exceptReason){
+void syscall(){
 
 	state_t* exception_state = (state_t*) BIOSDATAPAGE;
 	cpu_t current_time;
@@ -34,10 +34,9 @@ void syscall(int exceptReason){
 		ProgramTrapHandler();
 	}
 
+
+
 	/* if a0 = 1 */
-
-	
-
 	if (exception_state->s_a0 == CREATETHREAD){
 
 	pcb_t *newProc = allocPcb();

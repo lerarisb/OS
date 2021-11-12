@@ -77,7 +77,7 @@ int main(){
 	
 
 	/*load system wide Interval timer with 100 ms */
-	LDIT(100);
+	LDIT(PSEUDOCLOCKTIME);
 
 	p = allocPcb();
 	
@@ -132,24 +132,24 @@ void genExceptionHandler(){
 
 	/*or bits together to determine cause*/
 	oldState = (state_PTR) BIOSDATAPAGE;
-	exceptReason = (oldState->s_cause & GETEXECCODE) >>CAUSESHIFT;
+	exceptReason = (oldState->s_cause & GETEXECCODE) >> CAUSESHIFT;
 
 	debugExceptionHandlerAfterOr(1, 2, 3, 4);
 
 	if (exceptReason == INTERRUPT){
-		interruptHandler(exceptReason);
+		interruptHandler();
 	}
 
 	if (exceptReason <= TLBCAUSE){
-		TLBHandler(exceptReason);
+		TLBHandler();
 	}
 
 	if (exceptReason == SYSCALLHANDLE){
-		syscall(exceptReason);
+		syscall();
 	}
 
 	else{
-		ProgramTrapHandler(exceptReason);
+		ProgramTrapHandler();
 	}
 
 }
