@@ -21,7 +21,9 @@ extern pcb_t*readyQueue;
 /*use so you don't have to keep repeating this in other methods */
 contextSwitch(pcb_t *p){
 	currentProc = p;
-	LDST(&(p->p_s));
+	LDST(&(currentProc->p_s));
+	debugE(1, 2, 3, 4);
+
 
 }
 
@@ -48,7 +50,7 @@ void scheduler(){
 
 	debugC(1, 2, 3, 4);
 
-	/*this is where our current problem is */
+	
 	contextSwitch(currentProc);
 	
 
@@ -93,6 +95,11 @@ void debugC(int a, int b, int c, int d){
 }
 
 void debugD(int a, int b, int c, int d){
+	a++;
+	b++;
+}
+
+void debugE(int a, int b, int c, int d){
 	a++;
 	b++;
 }

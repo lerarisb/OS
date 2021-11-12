@@ -52,12 +52,12 @@ int main(){
 	Level 3 Nucleus Function that is the entry point for exception 
 	and interrupt handling*/
 
-	passUp->exception_handler = (memaddr) KERNELSTACK;
+	passUp->exception_handler = (memaddr) genExceptionHandler;
 
 	/*set the stack pointer for Nucleus exception handler to top of
 	nucleus stack page*/
 
-	passUp->exception_stackPtr = (memaddr) PASSUPVECTOR;
+	passUp->exception_stackPtr = (memaddr) KERNELSTACK;
 
 
 
@@ -66,7 +66,7 @@ int main(){
 	softBlockCount = 0;
 	readyQueue = mkEmptyProcQ();
 	currentProc = NULL;
-	pcb_PTR p;
+	pcb_t *p;
 
 	/*set device semaphores to 0*/
 	int i;
@@ -80,11 +80,7 @@ int main(){
 	LDIT(100);
 
 	p = allocPcb();
-	insertProcQ(&readyQueue, p);
-	processCount++;
-
 	
-
 	/*enable interrupts*/
 	/*enable processor local timer*/
 	/*kernel-mode on*/
@@ -95,7 +91,13 @@ int main(){
 	/*pcb set to address of test*/
 	p->p_s.s_sp = RAMTOP;
 	p->p_s.s_pc = (memaddr) test; 
-	p->p_s.s_status;
+	p->p_s.s_t9 = (memaddr) test;
+
+	/*set Support Structure Pointer pointer to null*/
+	p->p_supportStruct = NULL;
+
+	insertProcQ(&readyQueue, p);
+	processCount++;
 
 
 
@@ -106,8 +108,7 @@ int main(){
 	/*set blocking semaphore address to NULL*/
 	p->p_semAdd = NULL;
 
-	/*set Support Structure Pointer pointer to null*/
-	p->p_supportStruct = NULL;
+	
 
 	debugB(1, 2, 3, 4);
 
@@ -121,17 +122,49 @@ int main(){
 }
 
 void genExceptionHandler(){
+	
+	debugExceptionHandlerBeforeOr(1, 2, 3, 4);
+
 	state_PTR oldState;
 	int exceptReason;
 
+	
+
 	/*or bits together to determine cause*/
 	oldState = (state_PTR) BIOSDATAPAGE;
-	exceptReason = oldState->s_cause & GETEXECCODE>>CAUSESHIFT;
-	syscall(exceptReason);
+	exceptReason = (oldState->s_cause & GETEXECCODE) >>CAUSESHIFT;
+
+	debugExceptionHandlerAfterOr(1, 2, 3, 4);
+
+	if (exceptReason == INTERRUPT){
+		interruptHandler(exceptReason);
+	}
+
+	if (exceptReason <= TLBCAUSE){
+		TLBHandler(exceptReason);
+	}
+
+	if (exceptReason == SYSCALLHANDLE){
+		syscall(exceptReason);
+	}
+
+	else{
+		ProgramTrapHandler(exceptReason);
+	}
 
 }
 
 void debugB(int a, int b, int c, int d){
+	a = a + 2;
+	b = b + 2;
+}
+
+void debugExceptionHandlerBeforeOr(int a, int b, int c, int d){
+	a = a + 2;
+	b = b + 2;
+}
+
+void debugExceptionHandlerAfterOr(int a, int b, int c, int d){
 	a = a + 2;
 	b = b + 2;
 }

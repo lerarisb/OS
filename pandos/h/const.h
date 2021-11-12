@@ -21,10 +21,14 @@
 
 #define RAMTOP  (RAMBASEADDR + RAMBASESIZE)
 
-#define GETEXECCODE  0x1000000C
+#define GETEXECCODE  0x0000007C
 
 
-#define CREATEPROCESS = 1
+/*exception constants */
+#define INTERRUPT   0
+#define TLBCAUSE    3
+#define SYSCALLHANDLE     8
+
 
 /* utility constants */
 #define	TRUE			    1

@@ -51,7 +51,7 @@ void interruptHandler(){
        		while(proc !=NULL){
             		insertProcQ(&readyQueue, proc);
            	 	softBlockCount -= 1;
-           		proc = removeBlocked(&devSemaphore[SEM4DEV]); 
+           		proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		}
         /* set the semaphore to = 0 */
        		devSemaphore[SEM4DEV] = 0; 
@@ -85,7 +85,7 @@ void interruptHandler(){
 }
 
 /* interrupt Handler for peripheral devices */
-HIDDEN int devInterruptH(int devLine){
+ HIDDEN int devInterruptH(int devLine){
     unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
 
@@ -98,7 +98,7 @@ HIDDEN int devInterruptH(int devLine){
     int device_semaphore;
     /* register status of the interrupting device */
     unsigned int intstatus; 
-    pcb_PTR p;
+    pcb_t *p;
 
     /* determine which device number is causing an interrupt */
     if((bitMAP & DEV0) != 0){

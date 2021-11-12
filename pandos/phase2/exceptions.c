@@ -19,17 +19,14 @@
 #include "../h/scheduler.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
-void increasePC(){
-	/*increase pc by 4, since you have to do it in certain syscalls */
-
-	state_t *exceptState;
-	exceptState->s_pc = (state_t*) 0x0FFF000;
-	exceptState->s_v0 = 1;
-	exceptState->s_pc = exceptState->s_pc + 4;
-}
-
-
 void syscall(int exceptReason){
+
+	state_t* exception_state = (state_t*) BIOSDATAPAGE;
+	cpu_t current_time;
+	storeState(exception_state, &(currentProc->p_s));
+
+	/*update PC */
+	currentProc->p_s.s_pc += 4;
 
 
 	/*if in user-mode, trigger Program Trap Handler */
@@ -39,7 +36,9 @@ void syscall(int exceptReason){
 
 	/* if a0 = 1 */
 
-	if (currentProc->p_s.s_a0 == CREATETHREAD){
+	
+
+	if (exception_state->s_a0 == CREATETHREAD){
 
 	pcb_t *newProc = allocPcb();
 	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
@@ -57,9 +56,11 @@ void syscall(int exceptReason){
 	newProc->p_semAdd = 0;
 }
 
+	
 
 	/* if a0 = 2, terminate process recursively by calling freePcb*/
-	if (currentProc->p_s.s_a0 = TERMINATETHREAD){
+	if (exception_state->s_a0 = TERMINATETHREAD){
+	debugSyscall(1, 2, 3, 4);
 	terminateProcess(currentProc);
 	scheduler();
 	}
@@ -68,9 +69,8 @@ void syscall(int exceptReason){
 	
 	
 
-	if (currentProc->p_s.s_a0 == PASSERREN){
+	if (exception_state->s_a0 == PASSERREN){
 		
-		increasePC();
 		
 		/*physical address of semaphore goes in a1*/
 		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
@@ -97,8 +97,8 @@ void syscall(int exceptReason){
 		/*physical address of semaphore goes in a1*/
 	
 
-
-	if (currentProc->p_s.s_a0 == VERHOGEN){
+	debugVerhogen(1, 2, 3, 4);
+	if (exception_state->s_a0 == VERHOGEN){
 		
 		debugA(1, 2, 3, 4);
 
@@ -119,9 +119,9 @@ void syscall(int exceptReason){
 
 	/* if a0 = 5 */
 	
-	increasePC();
+	
 
-	if (currentProc->p_s.s_a0 = WAITIO){
+	if (exception_state->s_a0 = WAITIO){
 		/* transitions from running to blocked state*/
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
 		/*blocks current Process on ASL*/
@@ -167,7 +167,7 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 6 */
-	if (currentProc->p_s.s_a0 == GETCPUTIME){
+	if (exception_state->s_a0 == GETCPUTIME){
 		/* get CPU time and place in v0 */
 	cpu_t endTOD;
 	cpu_t totaltime = endTOD + currentProc->p_time;
@@ -179,9 +179,9 @@ void syscall(int exceptReason){
 
 	/* if a0 = 7 */
 	
-	increasePC();
+	
 
-	if (currentProc->p_s.s_a0 == WAITCLOCK){
+	if (exception_state->s_a0 == WAITCLOCK){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
 		/*blocks current process on ASL */
@@ -194,7 +194,7 @@ void syscall(int exceptReason){
 	}
 
 	/* if a0 = 8 */
-	if (currentProc->p_s.s_a0 == GETSUPPORTPTR){
+	if (exception_state->s_a0 == GETSUPPORTPTR){
 		/*requests a pointer to current process's support structure*/
 		/*returns value of p_support struct */
 		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
@@ -202,12 +202,12 @@ void syscall(int exceptReason){
 	}
 
 	/*if a0<1 */
-	if (currentProc->p_s.s_a0 <= 1){
+	if (exception_state->s_a0 <= 1){
 	ProgramTrapHandler(GENERALEXCEPT);
 	}
 
 	/*if a0>=9 */
-	if (currentProc->p_s.s_a0 >= 9){
+	if (exception_state->s_a0 >= 9){
 	ProgramTrapHandler(GENERALEXCEPT);
 	}
 }
@@ -268,4 +268,15 @@ void debugA(int a, int b, int c, int d){
 	a = 42;
 	b = 21;
 }
+
+void debugVerhogen(int a, int b, int c, int d){
+	a = 42;
+	b = 21;
+}
+
+void debugSyscall(int a, int b, int c, int d){
+	a = 42;
+	b = 21;
+}
+
 
