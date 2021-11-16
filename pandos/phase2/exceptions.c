@@ -40,6 +40,7 @@ void sysHandler(){
 
 	/*if in user-mode, trigger Program Trap Handler */
 	if (currentProc->p_s.s_status && USERON != 0){
+		debugUM(1,2,3,4);
 		ProgramTrapHandler();
 	}
 
@@ -274,6 +275,11 @@ void terminateProcess(pcb_t *currentProcess){
 
 
 void debugA(int a, int b, int c, int d){
+	a = 42;
+	b = 21;
+}
+
+void debugUM(int a, int b, int c, int d){
 	a = 42;
 	b = 21;
 }
