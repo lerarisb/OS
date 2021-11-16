@@ -16,6 +16,7 @@ extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
 extern pcb_t*readyQueue;
+extern cpu_t startClock;
 
 
 /*use so you don't have to keep repeating this in other methods */
@@ -23,14 +24,13 @@ void contextSwitch(pcb_PTR p){
 	debugE(1, 2, 3, 4);
 	currentProc = p;
 	LDST(&(p->p_s));
-
-	
-	
-
-
 }
 
-
+void timer(pcb_PTR currentProc, cpu_t time){
+	STCK(startClock);
+	setTIMER(time);
+	contextSwitch(currentProc);
+}
 
 /* Uses the round robin algorithm for each process that will be executed */
 void scheduler(){
@@ -44,53 +44,33 @@ void scheduler(){
 	temp = removeProcQ(&readyQueue);
 
 	if (temp != NULL){
+		timer(temp, QUANTUM);
+	}
 
-	/*store pointer to pcb in current field */
-	currentProc = temp;
-
-	/*load PLT*/
-	setTIMER(QUANTUM);
-
-	debugC(1, 2, 3, 4);
-
-	
-	contextSwitch(currentProc);
-	
-
-	debugD(1, 2, 3,4);
-
-
-
-	
-
-}
-
-/*if it goes to the else, it means that no process was stored on the ReadyQueue */
-	else{
-
-	/* If the process count is 0 then the job is completed so you can halt */
-	if(processCount == 0){
+	if (processCount == 0){
 		HALT();
 	}
-
-	/* if it makes it down here, we know the processCount > 0 */
 	else{
-		if(softBlockCount > 0){
-			/* need to set timer to a very large value */
-			setTIMER(MAXTIME);
 
-			/* set status register to enable interrupts */
-			currentProc->p_s.s_status = (ALLOFF | TEON | MASKON | IEON);
+		if (processCount > 0){
+			if(softBlockCount > 0){
 
-		}
-		/* there is a deadlock */
-		if(softBlockCount == 0){
-			PANIC();
+				currentProc = NULL;
+				/* need to set timer to a very large value */
+				setTIMER(MAXTIME);
+
+				unsigned int setStatus = (ALLOFF | IECON | IMON | TEBITON);
+				setSTATUS(setStatus);
+				WAIT();
 			}
+			/* there is a deadlock */
+			if(softBlockCount == 0){
+				PANIC();
+			}
+		}
 	}
 }
 
-}
 
 void debugC(int a, int b, int c, int d){
 	a++;

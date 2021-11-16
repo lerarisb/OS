@@ -10,6 +10,7 @@ extern pcb_t *currentProc;
 extern pcb_t *readyQueue;
 
 extern void contextSwitch(pcb_PTR p);
+extern void timer(pcb_PTR currentProc, cpu_t time);
 extern void scheduler();
 
 #endif

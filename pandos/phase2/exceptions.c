@@ -19,7 +19,16 @@
 #include "../h/scheduler.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
-void syscall(){
+
+
+extern int processCount;
+extern int softBlockCount;
+extern pcb_t *currentProc;
+extern pcb_t*readyQueue;
+extern cpu_t startClock;
+extern int devSemaphore[SEM4DEV];
+
+void sysHandler(){
 
 	state_t* exception_state = (state_t*) BIOSDATAPAGE;
 	cpu_t current_time;
@@ -73,16 +82,17 @@ void syscall(){
 		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
 
 		/*first, decrement integer*/
-		int semaphore = currentProc->p_s.s_a1;
+		int *semaphore = (int*) currentProc->p_s.s_a1;
 		semaphore--;
 
 		
 		/*want to check if semaphore is < 0, assuming it is stored in a1)*/
-		if (semaphore <= 0){
+		if ((*semaphore) <= 0){
 			insertBlocked(&semaphore, currentProc);
 		}
 
 		else{
+			debugA(1,2,3,4);
 			/*return control to the current process */
 			contextSwitch(currentProc);
 		}
@@ -101,16 +111,14 @@ void syscall(){
 
 		int *semaphore = (int *) currentProc->p_s.s_a1;
 		(*semaphore)++;
-
-
 	
 		if ((*semaphore) <= 0){
 			temp = removeBlocked(semaphore);
 			if (temp != NULL){
-			insertProcQ(&readyQueue, temp);
+				insertProcQ(&readyQueue, temp);
+			}
 		}
-	}
-			contextSwitch(currentProc);
+		contextSwitch(currentProc);
 	
 	}
 		
@@ -188,7 +196,6 @@ void syscall(){
 			processCount++;
 			insertBlocked(&(devSemaphore[SEM4DEV - 1]), currentProc);
 		}
-		
 		scheduler();
 	}
 
@@ -261,6 +268,8 @@ void terminateProcess(pcb_t *currentProcess){
 			terminateProcess(currentProcess);
 	}
 }
+
+
 
 
 void debugA(int a, int b, int c, int d){

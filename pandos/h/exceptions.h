@@ -4,7 +4,7 @@
 #ifndef EXCEPTIONS
 #define EXCEPTIONS
 
-extern void syscall();
+extern void sysHandler();
 extern void TLBHandler();
 extern void ProgramTrapHandler();
 extern void PassUpOrDie(int exception);

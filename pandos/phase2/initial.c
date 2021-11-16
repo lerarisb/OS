@@ -20,7 +20,7 @@ pcb_t *currentProc;
 pcb_t *readyQueue;
 int softBlockCount;
 int devSemaphore[SEM4DEV];
-cpu_t start_clock;
+cpu_t startClock;
 
 #define clockSem devSemaphore[SEM4DEV - 1]
 
@@ -29,8 +29,6 @@ cpu_t start_clock;
 
 int main(){
 	
-	/*set Clocksem to 0 */
-	clockSem = 0;
 	
 
 	initPcbs();
@@ -70,10 +68,12 @@ int main(){
 
 	/*set device semaphores to 0*/
 	int i;
-	for (i=0; i < SEM4DEV - 1; i++){
+	for (i=0; i < (SEM4DEV-1); i++){
 		devSemaphore[i] = 0;
 	}
 
+	/*set Clocksem to 0 */
+	clockSem = 0;
 	
 
 	/*load system wide Interval timer with 100 ms */
@@ -82,48 +82,51 @@ int main(){
 	p = allocPcb();
 	
 	if (p != NULL){
-	/*enable interrupts*/
-	/*enable processor local timer*/
-	/*kernel-mode on*/
+		/*enable interrupts*/
+		/*enable processor local timer*/
+		/*kernel-mode on*/
 
-	p->p_s.s_status = (ALLOFF | TEON | MASKON | IEON);
+
+		memaddr ramtop = *(int*)RAMBASEADDR + *(int*)RAMBASESIZE;
+
+		p->p_s.s_status = (ALLOFF | IECON | IMON | TEBITON);
 	
-	/*stack pointer set to RAMTOP*/
-	/*pcb set to address of test*/
-	p->p_s.s_sp = RAMTOP;
-	p->p_s.s_pc = (memaddr) test; 
-	p->p_s.s_t9 = (memaddr) test;
+		/*stack pointer set to RAMTOP*/
+		/*pcb set to address of test*/
+		p->p_s.s_sp = (memaddr) ramtop;
+		p->p_s.s_pc = (memaddr) test; 
+		p->p_s.s_t9 = (memaddr) test;
 
-	/*set Support Structure Pointer pointer to null*/
-	p->p_supportStruct = NULL;
+		/*set Support Structure Pointer pointer to null*/
+		p->p_supportStruct = NULL;
 
-	insertProcQ(&readyQueue, p);
-	processCount++;
+		
+		processCount++;
+		insertProcQ(&readyQueue, p);
 
 
 
+		/*accumulated time field to 0*/
+		/* p->p_time = 0; */
 
-	/*accumulated time field to 0*/
-	p->p_time = 0;
-
-	/*set blocking semaphore address to NULL*/
-	p->p_semAdd = NULL;
-
-	
-
-	debugB(1, 2, 3, 4);
-
-	/*call the scheduler*/
-	scheduler();
+		/*set blocking semaphore address to NULL*/
+		/* p->p_semAdd = NULL; */
 
 	
 
+		debugB(1, 2, 3, 4);
+
+		/*call the scheduler*/
+		scheduler();
+
 	
-}
-else{
-	PANIC();
-}
-return 0;
+
+	
+	}
+	else{
+		PANIC();
+	}
+	return 0;
 }
 
 void genExceptionHandler(){
@@ -150,7 +153,7 @@ void genExceptionHandler(){
 	}
 
 	if (exceptReason == SYSCALLHANDLE){
-		syscall();
+		sysHandler();
 	}
 
 	else{

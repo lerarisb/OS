@@ -14,7 +14,7 @@ extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
 extern pcb_t *readyQueue;
-extern cpu_t start_clock;
+extern cpu_t startClock;
 extern int devSemaphore[SEM4DEV];
 
 HIDDEN int devInterruptH(int devLine);
@@ -22,15 +22,15 @@ HIDDEN int termInterruptH(int *devSem);
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
-	cpu_t stop_clock;
-	cpu_t time_left;
-	time_left = getTIMER();
-	STCK(stop_clock);
+	cpu_t stopClock;
+	cpu_t timeLeft;
+	timeLeft = getTIMER();
+	STCK(stopClock);
 	/* PLT interrupt, means it is time to switch to next process */
 	if((((state_PTR)BIOSDATAPAGE)->s_cause & PLTINT) != 0){
 		if(currentProc != NULL){
 			/* get time of current process */
-			currentProc->p_time = (currentProc->p_time) + (stop_clock - start_clock);
+			currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
 			/* store processor state */
 			storeState((state_PTR) BIOSDATAPAGE, &(currentProc->p_s));
 			/* add proccess back to the readyQueue */
