@@ -39,7 +39,7 @@ void sysHandler(){
 
 
 	/*if in user-mode, trigger Program Trap Handler */
-	if (currentProc->p_s.s_status & USERON != 0){
+	if (currentProc->p_s.s_status && USERON != 0){
 		ProgramTrapHandler();
 	}
 
@@ -77,7 +77,7 @@ void sysHandler(){
 
 	if (exception_state->s_a0 == PASSERREN){
 		
-		
+	
 		/*physical address of semaphore goes in a1*/
 		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
 
@@ -87,7 +87,8 @@ void sysHandler(){
 
 		
 		/*want to check if semaphore is < 0, assuming it is stored in a1)*/
-		if ((*semaphore) <= 0){
+		if ((*semaphore) < 0){
+			
 			insertBlocked(&semaphore, currentProc);
 		}
 
@@ -128,7 +129,7 @@ void sysHandler(){
 	
 	
 
-	if (exception_state->s_a0 = WAITIO){
+	if (exception_state->s_a0 == WAITIO){
 		/* transitions from running to blocked state*/
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
 		/*blocks current Process on ASL*/
@@ -152,7 +153,7 @@ void sysHandler(){
 
 			/*if it is terminal, check to see if r/w is on and if so, treat as another device*/
 
-			if (lineNumber = 7){
+			if (lineNumber == 7){
 				if (readWrite = TRUE){
 					i = i + 8;
 				}
@@ -253,7 +254,7 @@ void PassUpOrDie(int exception){
 void terminateProcess(pcb_t *currentProcess){
 	
 	/*base case*/
-	if (currentProcess->p_child = NULL){
+	if (currentProcess->p_child == NULL){
 		currentProcess = currentProcess->p_prnt;
 		freePcb(removeChild(currentProcess));
 
