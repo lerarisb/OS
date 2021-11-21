@@ -124,9 +124,10 @@ void print(char *msg) {
 		*(base + 3) = PRINTCHR | (((devregtr) *s) << BYTELEN);
 		debugTest01(1,2,3,4);
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);
-		debugTest02(1,2,3,4);
+		
 		if ((status & TERMSTATMASK) != RECVD)
 			PANIC();
+		debugTest02(1,2,3,4);
 		s++;	
 	}
 	SYSCALL(VERHOGEN, (int)&term_mut, 0, 0);				/* V(term_mut) */

@@ -142,25 +142,31 @@ void sysHandler(){
 		int lineNumber = currentProc->p_s.s_a1;
 		int deviceNumber = currentProc->p_s.s_a2;
 		int readWrite = currentProc->p_s.s_a3;
+		int i;
 
 		
 		/*check to make sure it is a valid line number */
 
-		if (lineNumber > 3 && lineNumber < 7){
+		if ((lineNumber >= DISK) && (lineNumber <= TERM)){
+			
 			/*get int that acts as Device semaphore*/
-			/*this is what we need help with */
+			lineNumber = lineNumber - DISK;
+			int i = lineNumber * DEVPERINT + deviceNumber;
 
-			int i = lineNumber * deviceNumber;
 
 			/*if it is terminal, check to see if r/w is on and if so, treat as another device*/
 
-			if (lineNumber == 7){
+			if (lineNumber == TERM){
 				if (readWrite = TRUE){
-					i = i + 8;
+					i = i + DEVPERINT;
 				}
 
 			}
+
 			int semaphore = devSemaphore[i];
+
+			/*decrement semaphore*/
+			semaphore--;
 
 			/*perform P on it */
 
@@ -170,10 +176,20 @@ void sysHandler(){
 				insertBlocked(&semaphore, currentProc);
 			}
 
+			else{
+
 			/*if it does not need to be blocked, load new state and go */
-			contextSwitch(currentProc);
+			contextSwitch(currentProc);	
+		}
+
+	}
+
+		else{
+			terminateProcess(currentProc);
+			scheduler();
 		}
 	}
+	
 
 	/* if a0 = 6 */
 	if (exception_state->s_a0 == GETCPUTIME){

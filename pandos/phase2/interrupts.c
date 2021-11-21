@@ -17,17 +17,21 @@ extern pcb_t *readyQueue;
 extern cpu_t startClock;
 extern int devSemaphore[SEM4DEV];
 
-HIDDEN int devInterruptH(int devLine);
+HIDDEN void devInterruptH(int devLine);
 HIDDEN int termInterruptH(int *devSem);
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
 	cpu_t stopClock;
 	cpu_t timeLeft;
+
+    STCK(stopClock);
 	timeLeft = getTIMER();
-	STCK(stopClock);
+	
+    state_PTR interruptState = (state_PTR)BIOSDATAPAGE;
+    
 	/* PLT interrupt, means it is time to switch to next process */
-	if((((state_PTR)BIOSDATAPAGE)->s_cause & PLTINT) != 0){
+	if(((interruptState->s_cause) & PLTINT) != 0){
 		if(currentProc != NULL){
 			/* get time of current process */
 			currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
@@ -44,17 +48,17 @@ void interruptHandler(){
 		}
 	}
 	/* pseudo clock tick interrupt */
-	if((((state_PTR)BIOSDATAPAGE)->s_cause & TIMERINT) != 0){
+	if((interruptState->s_cause & TIMERINT) != 0){
 		pcb_PTR proc;
        		LDIT(PSEUDOCLOCKTIME);
-        	proc = removeBlocked(&devSemaphore[SEM4DEV]); 
+        	proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		while(proc !=NULL){
             		insertProcQ(&readyQueue, proc);
            	 	softBlockCount -= 1;
            		proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		}
         /* set the semaphore to = 0 */
-       		devSemaphore[SEM4DEV] = 0; 
+       		devSemaphore[SEM4DEV - 1] = 0; 
         	if(currentProc == NULL){
             		scheduler();
         	}
@@ -63,29 +67,40 @@ void interruptHandler(){
 	/* if it is not a PLT or pseudo clock interrupt and therefore a device interrupt */
 
 	/* disk interrupt */
-    if((((state_PTR)BIOSDATAPAGE)->s_cause & DISKINT) != 0){
+    if((interruptState->s_cause & DISKINT) != 0){
         /* disk dev is on */
         devInterruptH(DISK);
     }
     /* flash interrupt */
-    if((((state_PTR)BIOSDATAPAGE)->s_cause & FLASHINT) != 0){
+    if((interruptState->s_cause & FLASHINT) != 0){
         /* flash dev is on */
         devInterruptH(FLASH);
     }
     /* printer interrupt */
-    if((((state_PTR)BIOSDATAPAGE)->s_cause & PRINTERINT) != 0) {
+    if((interruptState->s_cause & PRINTERINT) != 0) {
         /* printer dev is on */
         devInterruptH(PRNT);
     }
     /* terminal interrupt */
-    if((((state_PTR)BIOSDATAPAGE)->s_cause & TERMINT) != 0) {
+    if(((interruptState->s_cause) & TERMINT) != 0) {
         /* terminal dev is on */
         devInterruptH(TERM);
     }
+
+    if (currentProc!= NULL){
+        currentProc->p_time = currentProc->p_time + (startClock - stopClock);
+        storeState(interruptState, &(currentProc->p_s));
+        timer(currentProc, timeLeft);
+    }
+
+    else{
+        HALT();
+    }
+
 }
 
 /* interrupt Handler for peripheral devices */
- HIDDEN int devInterruptH(int devLine){
+ HIDDEN void devInterruptH(int devLine){
     unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
 
@@ -142,7 +157,7 @@ void interruptHandler(){
     }
 
     /* V operation on the device semaphore */
-    devSemaphore[device_semaphore] = devSemaphore[device_semaphore] + 1;
+    devSemaphore[device_semaphore]++;
 
     /* if already waited for i/o */
     if(devSemaphore[device_semaphore] <= 0) {
