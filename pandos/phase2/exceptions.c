@@ -39,7 +39,7 @@ void sysHandler(){
 
 
 	/*if in user-mode, trigger Program Trap Handler */
-	if (currentProc->p_s.s_status && USERON != 0){
+	if (currentProc->p_s.s_status & USERON != 0){
 		debugUM(1,2,3,4);
 		ProgramTrapHandler();
 	}
@@ -48,7 +48,51 @@ void sysHandler(){
 
 	/* if a0 = 1 */
 	if (exception_state->s_a0 == CREATETHREAD){
+		SYSCALL1();}
 
+	if (exception_state->s_a0 == TERMINATETHREAD){
+		SYSCALL2();
+	}
+
+	/* if a0 = 3 , perform P*/
+	if (exception_state->s_a0 == PASSERREN){
+		SYSCALL3();
+	}
+
+	/* if a0 = 4 */
+	/*perform V */
+	if (exception_state->s_a0 == VERHOGEN){
+		SYSCALL4();
+	}
+
+	/* if a0 = 5 */
+	if (exception_state->s_a0 == WAITIO){
+		SYSCALL5();
+	}
+
+	/* if a0 = 6 */
+	if (exception_state->s_a0 == GETCPUTIME){
+		SYSCALL6();}
+
+	/* if a0 = 7 */
+	if (exception_state->s_a0 == WAITCLOCK){
+		SYSCALL7();
+	}
+
+	/* if a0 = 8 */
+	if (exception_state->s_a0 == GETSUPPORTPTR){
+		SYSCALL8();}
+
+	/*if a0 is anything else */
+	else{
+	ProgramTrapHandler(GENERALEXCEPT);
+	}
+
+
+}
+
+
+void SYSCALL1(){
 	pcb_t *newProc = allocPcb();
 	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
 
@@ -63,20 +107,17 @@ void sysHandler(){
 	newProc->p_semAdd = 0;
 }
 
-	debugRegister(currentProc->p_s.s_a0);
-
-	/* if a0 = 2, terminate process recursively by calling freePcb*/
-	if (exception_state->s_a0 == TERMINATETHREAD){
+	
+void SYSCALL2(){
 	debugSyscall(1, 2, 3, 4);
 	terminateProcess(currentProc);
 	scheduler();
 	}
 
-	/* if a0 = 3 , perform P*/
-	
-	
 
-	if (exception_state->s_a0 == PASSERREN){
+	
+void SYSCALL3(){
+
 		
 	
 		/*physical address of semaphore goes in a1*/
@@ -100,14 +141,8 @@ void sysHandler(){
 		}
 
 	}
-
-	/* if a0 = 4 */
-	/*perform V */
-		/*physical address of semaphore goes in a1*/
 	
-
-	
-	if (exception_state->s_a0 == VERHOGEN){
+void SYSCALL4(){
 		
 		pcb_t *temp;
 
@@ -125,12 +160,7 @@ void sysHandler(){
 	}
 		
 
-
-	/* if a0 = 5 */
-	
-	
-
-	if (exception_state->s_a0 == WAITIO){
+void SYSCALL5(){
 		/* transitions from running to blocked state*/
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
 		/*blocks current Process on ASL*/
@@ -139,7 +169,11 @@ void sysHandler(){
 		/*a3 is r/w */
 
 		
+
 		int lineNumber = currentProc->p_s.s_a1;
+
+		debugline(lineNumber);
+
 		int deviceNumber = currentProc->p_s.s_a2;
 		int readWrite = currentProc->p_s.s_a3;
 		int i;
@@ -147,7 +181,12 @@ void sysHandler(){
 		
 		/*check to make sure it is a valid line number */
 
-		if ((lineNumber >= DISK) && (lineNumber <= TERM)){
+		if ((lineNumber < DISK) || (lineNumber > TERM)){
+			terminateProcess(currentProc);
+			scheduler();
+		}
+
+		else{
 			
 			/*get int that acts as Device semaphore*/
 			lineNumber = lineNumber - DISK;
@@ -163,37 +202,39 @@ void sysHandler(){
 
 			}
 
-			int semaphore = devSemaphore[i];
+			devSemaphore[i]--;
+			debugSemaphore(devSemaphore[i]);
 
-			/*decrement semaphore*/
-			semaphore--;
+			
 
 			/*perform P on it */
 
 			/*check to see if it needs to be blocked*/
-			if (semaphore <0){
+
+			if (devSemaphore[i] <0){
+				debugNeedToBeBlocked(1, 2, 3, 4);
 				softBlockCount++;
-				insertBlocked(&semaphore, currentProc);
+				insertBlocked((&devSemaphore[i]), currentProc);
+				scheduler();
 			}
 
 			else{
-
 			/*if it does not need to be blocked, load new state and go */
 			contextSwitch(currentProc);	
 		}
 
 	}
 
-		else{
-			terminateProcess(currentProc);
-			scheduler();
-		}
-	}
+}
+
+		
+		
+	
 	
 
-	/* if a0 = 6 */
-	if (exception_state->s_a0 == GETCPUTIME){
-		/* get CPU time and place in v0 */
+void SYSCALL6(){
+			/* get CPU time and place in v0 */
+	
 	cpu_t endTOD;
 	cpu_t totaltime = endTOD + currentProc->p_time;
 	currentProc->p_s.s_v0 = totaltime;
@@ -202,11 +243,7 @@ void sysHandler(){
 
 	}
 
-	/* if a0 = 7 */
-	
-	
-
-	if (exception_state->s_a0 == WAITCLOCK){
+void SYSCALL7(){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
 		/*blocks current process on ASL */
@@ -217,26 +254,12 @@ void sysHandler(){
 		scheduler();
 	}
 
-	/* if a0 = 8 */
-	if (exception_state->s_a0 == GETSUPPORTPTR){
+void SYSCALL8(){
 		/*requests a pointer to current process's support structure*/
 		/*returns value of p_support struct */
 		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
 		return currentProc->p_s.s_v0;
 	}
-
-	/*if a0<1 */
-	if (exception_state->s_a0 <= 1){
-	ProgramTrapHandler(GENERALEXCEPT);
-	}
-
-	/*if a0>=9 */
-	if (exception_state->s_a0 >= 9){
-	ProgramTrapHandler(GENERALEXCEPT);
-	}
-}
-
-
 
 
 
@@ -312,6 +335,22 @@ void debugSyscall(int a, int b, int c, int d){
 
 void debugRegister(state_t *test){
 	int i = 1;
+}
+
+void debugNeedToBeBlocked(int a, int b, int c, int d){
+	a++;
+}
+
+void debugSemaphore(int a){
+	int i = a;
+}
+
+void debugWAITIO(int a, int b, int c, int d){
+	a++;
+}
+
+void debugline(int a){
+	int b = a;
 }
 
 

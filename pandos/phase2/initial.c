@@ -142,7 +142,7 @@ void genExceptionHandler(){
 	oldState = (state_PTR) BIOSDATAPAGE;
 	exceptReason = (oldState->s_cause & GETEXECCODE) >> CAUSESHIFT;
 
-	debugExceptionHandlerAfterOr(1, 2, 3, 4);
+	debugCause(exceptReason);
 
 	if (exceptReason == INTERRUPT){
 		interruptHandler();
@@ -175,4 +175,8 @@ void debugExceptionHandlerBeforeOr(int a, int b, int c, int d){
 void debugExceptionHandlerAfterOr(int a, int b, int c, int d){
 	a = a + 2;
 	b = b + 2;
+}
+
+void debugCause(int i){
+	i++;
 }
