@@ -31,6 +31,10 @@ extern int devSemaphore[SEM4DEV];
 void sysHandler(){
 
 	state_t* exception_state = (state_t*) BIOSDATAPAGE;
+	
+	int lineTest = exception_state->s_a1;
+	debugline(lineTest);
+
 	cpu_t current_time;
 	storeState(exception_state, &(currentProc->p_s));
 
@@ -181,7 +185,7 @@ void SYSCALL5(){
 		
 		/*check to make sure it is a valid line number */
 
-		if ((lineNumber < DISK) || (lineNumber > TERM)){
+		if ((lineNumber < DISKINT) || (lineNumber > TERMINT)){
 			terminateProcess(currentProc);
 			scheduler();
 		}
@@ -189,13 +193,13 @@ void SYSCALL5(){
 		else{
 			
 			/*get int that acts as Device semaphore*/
-			lineNumber = lineNumber - DISK;
+			lineNumber = lineNumber - DISKINT;
 			int i = lineNumber * DEVPERINT + deviceNumber;
 
 
 			/*if it is terminal, check to see if r/w is on and if so, treat as another device*/
 
-			if (lineNumber == TERM){
+			if (lineNumber == TERMINT){
 				if (readWrite = TRUE){
 					i = i + DEVPERINT;
 				}

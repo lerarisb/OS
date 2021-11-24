@@ -29,9 +29,9 @@ void interruptHandler(){
 	timeLeft = getTIMER();
 	
     state_PTR interruptState = (state_PTR)BIOSDATAPAGE;
-    
+
 	/* PLT interrupt, means it is time to switch to next process */
-	if(((interruptState->s_cause) & PLTINT) != 0){
+	if(((interruptState->s_cause) & PLTINTERRUPT) != 0){
 		if(currentProc != NULL){
 			/* get time of current process */
 			currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
@@ -67,24 +67,24 @@ void interruptHandler(){
 	/* if it is not a PLT or pseudo clock interrupt and therefore a device interrupt */
 
 	/* disk interrupt */
-    if((interruptState->s_cause & DISKINT) != 0){
+    if((interruptState->s_cause & DISKINTERRUPT) != 0){
         /* disk dev is on */
-        devInterruptH(DISK);
+        devInterruptH(DISKINT);
     }
     /* flash interrupt */
-    if((interruptState->s_cause & FLASHINT) != 0){
+    if((interruptState->s_cause & FLASHINTERRUPT) != 0){
         /* flash dev is on */
-        devInterruptH(FLASH);
+        devInterruptH(FLASHINT);
     }
     /* printer interrupt */
-    if((interruptState->s_cause & PRINTERINT) != 0) {
+    if((interruptState->s_cause & PRINTERINTERRUPT) != 0) {
         /* printer dev is on */
-        devInterruptH(PRNT);
+        devInterruptH(PRNTINT);
     }
     /* terminal interrupt */
-    if(((interruptState->s_cause) & TERMINT) != 0) {
+    if(((interruptState->s_cause) & TERMINTERRUPT) != 0) {
         /* terminal dev is on */
-        devInterruptH(TERM);
+        devInterruptH(TERMINT);
     }
 
     if (currentProc!= NULL){
@@ -106,7 +106,7 @@ void interruptHandler(){
 
     /* getting the dev address */
     deviceRegister = (devregarea_t *) RAMBASEADDR;
-    bitMAP = deviceRegister->interrupt_dev[devLine-DISK];
+    bitMAP = deviceRegister->interrupt_dev[devLine-DISKINT];
     /* interrupt device number */
     int device_number; 
     /* interrupt device semaphore */
@@ -142,10 +142,10 @@ void interruptHandler(){
     }
 	
     /* get device semaphore */
-    device_semaphore = ((devLine - DISK) * DEVPERINT) + device_number;
+    device_semaphore = ((devLine - DISKINT) * DEVPERINT) + device_number;
 	
     /* terminal interrupts */
-    if(devLine == TERM){
+    if(devLine == TERMINT){
         intstatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
 
     /* if not a terminal device interrupt */

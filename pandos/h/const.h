@@ -39,11 +39,11 @@
 #define NULL 			    ((void *)0xFFFFFFFF)
 
 /* device interrupts */
-#define DISK			  3
-#define FLASH 		  4
-#define NET 		  5
-#define PRNT 		  6
-#define TERM			  7
+#define DISKINT			  3
+#define FLASHINT 		  4
+#define NETINT 		  5
+#define PRNTINT 		  6
+#define TERMINT			  7
 
 #define DEVINTNUM		  5		  /* interrupt lines used by devices */
 #define DEVPERINT		  8		  /* devices per interrupt line */
@@ -133,13 +133,13 @@
 #define GETSUPPORTPTR   8
 
 
-#define PLTINT 0x00000200 /* clock 1 interrupt */
+#define PLTINTERRUPT 0x00000200 /* PLT interrupt */
 #define TIMERINT 0x00000400 /* clock 2 interrupt */
-#define DISKINT 0x00000800  /* disk interrupt */
-#define FLASHINT 0x00001000  /* flash interrupt */
-#define NETWORKINT 0x00002000   /* network interrupt */
-#define PRINTERINT 0x00004000  /* printer interrupt */
-#define TERMINT 0x00008000  /* terminal interrupt */
+#define DISKINTERRUPT 0x00000800  /* disk interrupt */
+#define FLASHINTERRUPT 0x00001000  /* flash interrupt */
+#define NETWORKINTERRUPT 0x00002000   /* network interrupt */
+#define PRINTERINTERRUPT 0x00004000  /* printer interrupt */
+#define TERMINTERRUPT 0x00008000  /* terminal interrupt */
 
 #define PSEUDOCLOCKTIME 100000
 #define MAXTIME 0xFFFFFFFF

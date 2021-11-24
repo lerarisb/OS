@@ -127,7 +127,7 @@ void print(char *msg) {
 		
 		if ((status & TERMSTATMASK) != RECVD)
 			PANIC();
-		debugTest02(1,2,3,4);
+		
 		s++;	
 	}
 	SYSCALL(VERHOGEN, (int)&term_mut, 0, 0);				/* V(term_mut) */
@@ -152,10 +152,11 @@ void uTLB_RefillHandler () {
 /*                                                                   */
 void test() {	
 
-	SYSCALL(VERHOGEN, (int)&testsem, 0, 0);					/* V(testsem)   */
+	SYSCALL(VERHOGEN, (int)&testsem, 0, 0);	
+	debugTest2(1,2,3,4);				/* V(testsem)   */
 	print("p1 v(testsem)\n");
 	/* set up states of the other processes */
-debugTest2(1,2,3,4);
+
 	/* set up p2's state */
 	STST(&p2state);			/* create a state area             */	
 	
@@ -235,6 +236,8 @@ debugTest2(1,2,3,4);
 
 	/* create process p2 */
 	SYSCALL(CREATETHREAD, (int)&p2state, (int) NULL , 0);				/* start p2     */
+
+	debugTest02(1,2,3,4);
 
 	print("p2 was started\n");
 
