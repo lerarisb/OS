@@ -97,21 +97,60 @@ void sysHandler(){
 
 
 void SYSCALL1(){
+	
+	/*create new process */
 	pcb_t *newProc = allocPcb();
-	storeState(currentProc->p_s.s_a1, &(newProc->p_s));
 
-	/*init newProc according to parameters in a0 and a1*/
+
+	/*check to see if there was space for the new process */
+	if (newProc != NULL){
+
+		/*increase process count */
+		processCount++;
+
+		/*init newProc according to parameters in a0 and a1*/
+		storeState((state_t*)currentProc->p_s.s_a1, &(newProc->p_s));
 	
-	insertChild(newProc, currentProc);
-	storeState(currentProc->p_s.s_a2, newProc->p_supportStruct);
-	insertProcQ(&readyQueue, newProc);
-	processCount++;
-	
+		/*check to see if there is a parameter in a2
+		if no parameter provided, set field to null */
+
+		if ((support_t*) currentProc->p_s.s_a2 == NULL){
+			newProc->p_supportStruct = NULL;}
+
+		else{
+			/*if parameter is provided, set Support Struct equal to parameter */
+			newProc->p_supportStruct = (support_t*) currentProc->p_s.s_a2;
+		}
+
+	/*process has yet to accumulate any cpu time */
 	newProc->p_time = 0;
+
+	/*this process is in the ready state */
 	newProc->p_semAdd = 0;
+
+	/*return value of 0 in caller's v0 */
+	currentProc->p_s.s_v0 = 0;
+
+	/*insert process onto ready queue */
+	insertProcQ(&readyQueue, newProc);
+
+	/*insert newly created process as a child of current process */
+	insertChild(newProc, currentProc);
+
 }
 
-	
+else{
+	/*if there is no room in the pool to create process
+	return -1 in caller's v0
+	and return control to current process */
+
+	currentProc->p_s.s_v0 = -1;
+	}
+
+contextSwitch(currentProc);
+
+}
+
 void SYSCALL2(){
 	debugSyscall(1, 2, 3, 4);
 	terminateProcess(currentProc);
@@ -355,6 +394,10 @@ void debugWAITIO(int a, int b, int c, int d){
 
 void debugline(int a){
 	int b = a;
+}
+
+void debugSyscall1(int a, int b, int c, int d){
+	a++;
 }
 
 

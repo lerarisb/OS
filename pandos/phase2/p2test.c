@@ -235,6 +235,9 @@ void test() {
 	
 
 	/* create process p2 */
+	
+	debugTest02(1,2,3,4);
+
 	SYSCALL(CREATETHREAD, (int)&p2state, (int) NULL , 0);				/* start p2     */
 
 	debugTest02(1,2,3,4);
