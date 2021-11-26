@@ -30,6 +30,7 @@ extern int devSemaphore[SEM4DEV];
 
 void sysHandler(){
 
+
 	state_t* exception_state = (state_t*) BIOSDATAPAGE;
 	
 	int lineTest = exception_state->s_a1;
@@ -173,8 +174,13 @@ void SYSCALL3(){
 		
 		/*want to check if semaphore is < 0, assuming it is stored in a1)*/
 		if ((*semaphore) < 0){
+
+			/*if it is less than 0, insert current process onto readyQueue and
+			store the time the process took and attribute it to the process in the 
+			p_time field */
 			
-			insertBlocked(&semaphore, currentProc);
+			helpBlocking(semaphore);
+
 		}
 
 		else{
@@ -254,11 +260,10 @@ void SYSCALL5(){
 
 			/*check to see if it needs to be blocked*/
 
-			if (devSemaphore[i] <0){
+			if (devSemaphore[i] < 0){
 				debugNeedToBeBlocked(1, 2, 3, 4);
 				softBlockCount++;
-				insertBlocked((&devSemaphore[i]), currentProc);
-				scheduler();
+				helpBlocking(&(devSemaphore[i]));
 			}
 
 			else{
@@ -277,10 +282,11 @@ void SYSCALL5(){
 
 void SYSCALL6(){
 			/* get CPU time and place in v0 */
-	
-	cpu_t endTOD;
-	cpu_t totaltime = endTOD + currentProc->p_time;
-	currentProc->p_s.s_v0 = totaltime;
+	cpu_t current_time;
+	STCK(current_time);
+	current_time = (current_time - startClock) + currentProc -> p_time;
+	currentProc->p_s.s_v0 = current_time;
+	contextSwitch(currentProc);
 
 	/*do you have to do anything else to timer? */
 
@@ -290,11 +296,14 @@ void SYSCALL7(){
 		
 		/*performs a P operation on pseudo-clock semaphore*/
 		/*blocks current process on ASL */
+		
+		devSemaphore[SEM4DEV - 1]--;
+
 		if (devSemaphore[SEM4DEV - 1] < 0){
 			processCount++;
-			insertBlocked(&(devSemaphore[SEM4DEV - 1]), currentProc);
+			helpBlocking(&(devSemaphore[SEM4DEV - 1]));
 		}
-		scheduler();
+		contextSwitch(currentProc);
 	}
 
 void SYSCALL8(){
@@ -351,6 +360,15 @@ void terminateProcess(pcb_t *currentProcess){
 			removeChild(currentProcess);
 			terminateProcess(currentProcess);
 	}
+}
+
+void helpBlocking(int *semaphore){
+	cpu_t TOD_stop;
+	STCK(TOD_stop);
+	currentProc->p_time = currentProc->p_time + (TOD_stop - startClock);
+	insertBlocked(semaphore, currentProc);
+	currentProc = NULL;
+	scheduler();
 }
 
 
