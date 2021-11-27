@@ -345,21 +345,55 @@ void PassUpOrDie(int exception){
 
 void terminateProcess(pcb_t *currentProcess){
 	
-	/*base case*/
-	if (currentProcess->p_child == NULL){
-		currentProcess = currentProcess->p_prnt;
-		freePcb(removeChild(currentProcess));
+	/*continue terminating all processes until pointer to a process is null */
+	while(!(emptyChild(currentProcess))){
 
+		/*call terminate process on the child of the current process */
+		terminateProcess(removeChild(currentProcess));
+	}
+
+	/*test to see if process that was given is the current process
+	if so, remove the current process as a child from its parent */
+	if(currentProcess == currentProc){
+		outChild(currentProcess);
+	}
+
+	/*if there is not a semaphore for the given process
+	remove it from the readyQueue */
+	else if(currentProcess->p_semAdd == NULL){
+		outProcQ(&readyQueue, currentProcess);
 	}
 
 	else{
-		while (currentProcess->p_child != NULL){
-			currentProcess = currentProcess->p_child;
+		/*since it makes it here, we know the process has a semaphore and is blocked */
+		/*remove the given process */
+		pcb_t *temp = outBlocked(currentProcess);
+
+		/*check to see if a process actually was removed */
+		if (temp != NULL){
+			int* semaphore = currentProcess->p_semAdd;
+
+			/*check to see if the process you are terminating was on the ASL
+			if it was, decrease softBlockCount by 1 */
+
+			if (temp >= &devSemaphore[0] && temp <=&devSemaphore[SEM4DEV - 1]){
+				softBlockCount--;
+			}
+
+			else{
+				/*if terminated process is blocked on a semaphore, 
+				the value of the semaphore must be adjusted*/
+				(*semaphore)++;
+			}
 		}
-	
-			removeChild(currentProcess);
-			terminateProcess(currentProcess);
 	}
+
+	/*reflect that a process was terminated */
+	processCount--;
+
+	/*frees space to go with terminated process*/
+	freePcb(currentProcess);
+
 }
 
 void helpBlocking(int *semaphore){
