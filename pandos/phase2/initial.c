@@ -89,8 +89,7 @@ int main(){
 
 		memaddr ramtop = *(int*)RAMBASEADDR + *(int*)RAMBASESIZE;
 
-		p->p_s.s_status = (ALLOFF | IECON | IMON | TEBITON);
-	
+
 		/*stack pointer set to RAMTOP*/
 		/*pcb set to address of test*/
 		p->p_s.s_sp = (memaddr) ramtop;
@@ -99,6 +98,9 @@ int main(){
 
 		/*set Support Structure Pointer pointer to null*/
 		p->p_supportStruct = NULL;
+		
+		p->p_s.s_status = (ALLOFF | IECON | IMON | TEBITON);
+	
 
 		
 		processCount++;

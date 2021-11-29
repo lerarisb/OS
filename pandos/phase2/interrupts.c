@@ -54,15 +54,15 @@ void interruptHandler(){
 		pcb_PTR proc;
        		LDIT(PSEUDOCLOCKTIME);
         	proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
-       		while(proc !=NULL){
-            		insertProcQ(&readyQueue, proc);
+       		while(proc != NULL){
+            	insertProcQ(&readyQueue, proc);
            	 	softBlockCount -= 1;
            		proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		}
         /* set the semaphore to = 0 */
        		devSemaphore[SEM4DEV - 1] = 0; 
         	if(currentProc == NULL){
-            		scheduler();
+            	scheduler();
         	}
 	}
 
@@ -119,7 +119,7 @@ void interruptHandler(){
     /* interrupt device semaphore */
     int device_semaphore;
     /* register status of the interrupting device */
-    unsigned int intstatus; 
+    unsigned int intStatus; 
     pcb_t *p;
 
     /* determine which device number is causing an interrupt */
@@ -153,12 +153,12 @@ void interruptHandler(){
 	
     /* terminal interrupts */
     if(devLine == TERMINT){
-        intstatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
+        intStatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
 
     /* if not a terminal device interrupt */
     }
     else{
-        intstatus = ((deviceRegister->devreg[device_semaphore]).d_status);
+        intStatus = ((deviceRegister->devreg[device_semaphore]).d_status);
         /* ACK the interrupt */
         (deviceRegister->devreg[device_semaphore]).d_command = ACK;
     }
@@ -171,7 +171,7 @@ void interruptHandler(){
         p = removeBlocked(&(devSemaphore[device_semaphore]));
         if (p != NULL) {
 	    /* save status */
-            p->p_s.s_v0 = intstatus;
+            p->p_s.s_v0 = intStatus;
 	    /* insert the process onto the ready queue */
             insertProcQ(&readyQueue, p);
 	    /* update SBC*/

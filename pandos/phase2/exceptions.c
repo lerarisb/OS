@@ -31,9 +31,9 @@ extern int devSemaphore[SEM4DEV];
 void sysHandler(){
 
 
-	state_t* exception_state = (state_t*) BIOSDATAPAGE;
+	state_PTR exception_state = (state_PTR) BIOSDATAPAGE;
 	
-	int lineTest = exception_state->s_a1;
+	int lineTest = exception_state->s_a0;
 	debugline(lineTest);
 
 	cpu_t current_time;
@@ -44,48 +44,48 @@ void sysHandler(){
 
 
 	/*if in user-mode, trigger Program Trap Handler */
-	if (currentProc->p_s.s_status & USERON != 0){
+	if (lineTest >= 1 && lineTest <= 8 && USERON != 0){
 		debugUM(1,2,3,4);
-		ProgramTrapHandler();
+		PassUpOrDie(GENERALEXCEPT);
 	}
 
 	
 
 	/* if a0 = 1 */
-	if (exception_state->s_a0 == CREATETHREAD){
+	if (lineTest == CREATETHREAD){
 		SYSCALL1();}
 
-	if (exception_state->s_a0 == TERMINATETHREAD){
+	if (lineTest == TERMINATETHREAD){
 		SYSCALL2();
 	}
 
 	/* if a0 = 3 , perform P*/
-	if (exception_state->s_a0 == PASSERREN){
+	if (lineTest == PASSERREN){
 		SYSCALL3();
 	}
 
 	/* if a0 = 4 */
 	/*perform V */
-	if (exception_state->s_a0 == VERHOGEN){
+	if (lineTest == VERHOGEN){
 		SYSCALL4();
 	}
 
 	/* if a0 = 5 */
-	if (exception_state->s_a0 == WAITIO){
+	if (lineTest == WAITIO){
 		SYSCALL5();
 	}
 
 	/* if a0 = 6 */
-	if (exception_state->s_a0 == GETCPUTIME){
+	if (lineTest == GETCPUTIME){
 		SYSCALL6();}
 
 	/* if a0 = 7 */
-	if (exception_state->s_a0 == WAITCLOCK){
+	if (lineTest == WAITCLOCK){
 		SYSCALL7();
 	}
 
 	/* if a0 = 8 */
-	if (exception_state->s_a0 == GETSUPPORTPTR){
+	if (lineTest == GETSUPPORTPTR){
 		SYSCALL8();}
 
 	/*if a0 is anything else */
@@ -136,7 +136,7 @@ void SYSCALL1(){
 	insertProcQ(&readyQueue, newProc);
 
 	/*insert newly created process as a child of current process */
-	insertChild(newProc, currentProc);
+	insertChild(currentProc, newProc);
 
 }
 
@@ -169,7 +169,7 @@ void SYSCALL3(){
 
 		/*first, decrement integer*/
 		int *semaphore = (int*) currentProc->p_s.s_a1;
-		semaphore--;
+		(*semaphore)--;
 
 		
 		/*want to check if semaphore is < 0, assuming it is stored in a1)*/
@@ -225,6 +225,8 @@ void SYSCALL5(){
 
 		int deviceNumber = currentProc->p_s.s_a2;
 		int readWrite = currentProc->p_s.s_a3;
+		
+		/* do we need this ? */
 		int i;
 
 		
@@ -284,7 +286,7 @@ void SYSCALL6(){
 			/* get CPU time and place in v0 */
 	cpu_t current_time;
 	STCK(current_time);
-	current_time = (current_time - startClock) + currentProc -> p_time;
+	current_time = (current_time - startClock) + currentProc->p_time;
 	currentProc->p_s.s_v0 = current_time;
 	contextSwitch(currentProc);
 
@@ -300,7 +302,7 @@ void SYSCALL7(){
 		devSemaphore[SEM4DEV - 1]--;
 
 		if (devSemaphore[SEM4DEV - 1] < 0){
-			processCount++;
+			softBlockCount++;
 			helpBlocking(&(devSemaphore[SEM4DEV - 1]));
 		}
 		contextSwitch(currentProc);
@@ -310,7 +312,11 @@ void SYSCALL8(){
 		/*requests a pointer to current process's support structure*/
 		/*returns value of p_support struct */
 		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
+		contextSwitch(currentProc);
+
+		/* not sure we need this 
 		return currentProc->p_s.s_v0;
+		*/
 	}
 
 
