@@ -155,6 +155,7 @@ void test() {
 	SYSCALL(VERHOGEN, (int)&testsem, 0, 0);	
 	debugTest2(1,2,3,4);				/* V(testsem)   */
 	print("p1 v(testsem)\n");
+
 	/* set up states of the other processes */
 
 	/* set up p2's state */
@@ -410,6 +411,7 @@ void p4() {
 			p4inc++;
 			break;
 		case 2:
+		p42(1,2,3,4);
 			print("second incarnation of p4 starts\n");
 			break;
 	}
@@ -446,6 +448,7 @@ void p4() {
 
 /* p5's program trap handler */
 void p5gen() {
+	
 	unsigned int exeCode = pFiveSupport.sup_exceptState[GENERALEXCEPT].s_cause;
 	exeCode = (exeCode & CAUSEMASK) >> 2;
 	switch (exeCode) {
@@ -519,8 +522,9 @@ void p5sys() {
 
 /* p5 -- SYS5 test process */
 void p5() {
+	p5test(1,2,3,4);
 	print("p5 starts\n");
-		
+	p5test2(1,2,3,4);
 	/* cause a pgm trap access some non-existent memory */	
 	*p5MemLocation = *p5MemLocation + 1;		 /* Should cause a program trap */
 }
@@ -673,3 +677,17 @@ void debugTest2(int a, int b, int c, int d){
 	b = b + 2;
 }
 
+void p5test(int a, int b, int c, int d){
+	a = a + 2;
+	b = b + 2;
+}
+
+void p5test2(int a, int b, int c, int d){
+	a = a + 2;
+	b = b + 2;
+}
+
+void p42(int a, int b, int c, int d){
+	a= a+2;
+	b= b+2;
+}

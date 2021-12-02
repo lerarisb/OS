@@ -33,8 +33,12 @@ void sysHandler(){
 
 	state_PTR exception_state = (state_PTR) BIOSDATAPAGE;
 	
-	int lineTest = exception_state->s_a0;
+	int lineTest;
+	lineTest = exception_state->s_a0;
 	debugline(lineTest);
+
+
+	int isUserON = (currentProc->p_s.s_status & USERON);
 
 	cpu_t current_time;
 	storeState(exception_state, &(currentProc->p_s));
@@ -44,7 +48,7 @@ void sysHandler(){
 
 
 	/*if in user-mode, trigger Program Trap Handler */
-	if (lineTest >= 1 && lineTest <= 8 && USERON != 0){
+	if (lineTest >= 1 && lineTest <= 8 && isUserON != 0){
 		debugUM(1,2,3,4);
 		PassUpOrDie(GENERALEXCEPT);
 	}
@@ -342,6 +346,8 @@ void PassUpOrDie(int exception){
 		currentProc->p_supportStruct->sup_exceptContext[exception].c_pc);
 
 	}
+	terminateProcess(currentProc);
+	scheduler();
 
 }
 
@@ -388,7 +394,7 @@ void terminateProcess(pcb_t *currentProcess){
 
 			else{
 				/*if terminated process is blocked on a semaphore, 
-				the value of the semaphore must be adjusted*/
+				the value of the semaphore must be adjusted */
 				(*semaphore)++;
 			}
 		}
@@ -397,8 +403,9 @@ void terminateProcess(pcb_t *currentProcess){
 	/*reflect that a process was terminated */
 	processCount--;
 
-	/*frees space to go with terminated process*/
+	/*frees space to go with terminated process */
 	freePcb(currentProcess);
+
 
 }
 
