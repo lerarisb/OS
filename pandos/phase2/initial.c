@@ -11,6 +11,8 @@
 
 extern void test();
 
+
+extern void uTLB_RefillHandler();
 /* nucleus initalization */
 
 /* declare global variables */
@@ -44,7 +46,7 @@ int main(){
 	/*set stack pointer ofr Nucleus TLB-Refill event 
 	handler to top of Nucleus Stack Page*/
 
-	passUp->tlb_refll_stackPtr = KERNELSTACK;
+	passUp->tlb_refll_stackPtr = (memaddr) KERNELSTACK;
 
 	/*set Nucleus exception handler address to address of 
 	Level 3 Nucleus Function that is the entry point for exception 
@@ -116,7 +118,7 @@ int main(){
 
 	
 
-		debugB(1, 2, 3, 4);
+
 
 		/*call the scheduler*/
 		scheduler();
@@ -133,7 +135,7 @@ int main(){
 
 void genExceptionHandler(){
 	
-	debugExceptionHandlerBeforeOr(1, 2, 3, 4);
+
 
 	state_PTR oldState;
 	int exceptReason;
@@ -143,8 +145,6 @@ void genExceptionHandler(){
 	/*or bits together to determine cause*/
 	oldState = (state_PTR) BIOSDATAPAGE;
 	exceptReason = (oldState->s_cause & GETEXECCODE) >> CAUSESHIFT;
-
-	debugCause(exceptReason);
 
 	if (exceptReason == INTERRUPT){
 		interruptHandler();
@@ -164,21 +164,3 @@ void genExceptionHandler(){
 
 }
 
-void debugB(int a, int b, int c, int d){
-	a = a + 2;
-	b = b + 2;
-}
-
-void debugExceptionHandlerBeforeOr(int a, int b, int c, int d){
-	a = a + 2;
-	b = b + 2;
-}
-
-void debugExceptionHandlerAfterOr(int a, int b, int c, int d){
-	a = a + 2;
-	b = b + 2;
-}
-
-void debugCause(int i){
-	i++;
-}

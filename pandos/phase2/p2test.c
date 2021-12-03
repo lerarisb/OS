@@ -411,8 +411,9 @@ void p4() {
 			p4inc++;
 			break;
 		case 2:
-		p42(1,2,3,4);
+		p42b(1,2,3,4);
 			print("second incarnation of p4 starts\n");
+			p42a(1,2,3,4);
 			break;
 	}
 
@@ -687,7 +688,12 @@ void p5test2(int a, int b, int c, int d){
 	b = b + 2;
 }
 
-void p42(int a, int b, int c, int d){
+void p42a(int a, int b, int c, int d){
+	a= a+2;
+	b= b+2;
+}
+
+void p42b(int a, int b, int c, int d){
 	a= a+2;
 	b= b+2;
 }

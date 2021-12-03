@@ -19,7 +19,7 @@
 #define INTERVALTMR		0x10000020	
 #define TIMESCALEADDR	0x10000024
 
-#define RAMTOP  (RAMBASEADDR + RAMBASESIZE)
+#define RAMTOP  0x20001000
 
 #define GETEXECCODE  0x0000007C
 
@@ -86,7 +86,7 @@
 #define BIOSDATAPAGE    0x0FFFF000
 #define	PASSUPVECTOR	  0x0FFFF900
 
-/* Exceptions related constants */
+/* Exceptions related constants 
 #define	PGFAULTEXCEPT	  0
 #define GENERALEXCEPT	  1
 

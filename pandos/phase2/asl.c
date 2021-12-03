@@ -150,14 +150,18 @@ pcb_t *removeBlocked(int *semAdd){
 			semaphore->s_next = semaphore->s_next->s_next;
 			/* remove semaphore and set its address to null */
 			freeSemd(toBeRemoved);
+			temp->p_semAdd = NULL;
 			return temp;
 		}
 		else{
+			temp->p_semAdd = NULL;
 			return temp;
 		}
 	}
-	/*semaphor was not in ASL so nothing to remove*/
-	return NULL;
+	else{
+		/*semaphor was not in ASL so nothing to remove*/
+		return NULL;
+	}
 }
 
 /* Does same thing as removeBlocked but calls outProcQ instead of removeProcQ */
@@ -183,11 +187,14 @@ pcb_t *outBlocked(pcb_t *p){
 			return temp;
 		}
 		else{
+			temp->p_semAdd = NULL;
 			return temp;
 		}
 	}
-	/*semaphor was not in ASL so nothing to remove*/
-	return NULL;
+	else{
+		/*semaphor was not in ASL so nothing to remove*/
+		return NULL;
+	}
 }
 
 /* returns pointer at head of process queue associated with the semaphore at

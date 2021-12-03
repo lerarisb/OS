@@ -10,6 +10,8 @@
 #include "../h/scheduler.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
+
+
 extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
@@ -32,7 +34,6 @@ void interruptHandler(){
 
 	/* PLT interrupt, means it is time to switch to next process */
 	if(((interruptState->s_cause) & PLTINTERRUPT) != 0){
-        PLTinterrupt(1, 2);
 		if(currentProc != NULL){
 			/* get time of current process */
 			currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
@@ -50,7 +51,7 @@ void interruptHandler(){
 	}
 	/* pseudo clock tick interrupt */
 	if((interruptState->s_cause & TIMERINT) != 0){
-        PseudoClockTickInterrupt(1, 2);
+
 		pcb_PTR proc;
        		LDIT(PSEUDOCLOCKTIME);
         	proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
@@ -71,30 +72,25 @@ void interruptHandler(){
 	/* disk interrupt */
     if((interruptState->s_cause & DISKINTERRUPT) != 0){
         /* disk dev is on */
-        DiskInterrupt(1, 2);
         devInterruptH(DISKINT);
     }
     /* flash interrupt */
     if((interruptState->s_cause & FLASHINTERRUPT) != 0){
         /* flash dev is on */
-        FlashInterrupt(1, 2);
         devInterruptH(FLASHINT);
     }
     /* printer interrupt */
     if((interruptState->s_cause & PRINTERINTERRUPT) != 0) {
         /* printer dev is on */
-        Printerinterrupt(1, 2);
         devInterruptH(PRNTINT);
     }
     /* terminal interrupt */
     if(((interruptState->s_cause) & TERMINTERRUPT) != 0) {
         /* terminal dev is on */
-        TerminalInterrupt(1, 2);
         devInterruptH(TERMINT);
     }
 
     if (currentProc!= NULL){
-        currentProcIsNull(1, 2);
         currentProc->p_time = currentProc->p_time + (startClock - stopClock);
         storeState(interruptState, &(currentProc->p_s));
         timer(currentProc, timeLeft);
@@ -219,30 +215,3 @@ void storeState(state_t *blocked, state_t *ready){
     ready->s_cause = blocked->s_cause;
 }
 
-void PLTinterrupt(int a, int b){
-    a++;
-}
-
-void PseudoClockTickInterrupt(int a, int b){
-    a++;
-}
-
-void DiskInterrupt(int a, int b){
-    a++;
-}
-
-void FlashInterrupt(int a, int b){
-    a++;
-}
-
-void Printerinterrupt(int a, int b){
-    a++;
-}
-
-void TerminalInterrupt(int a, int b){
-    a++;
-}
-
-void currentProcIsNull(int a, int b){
-    a++;
-}

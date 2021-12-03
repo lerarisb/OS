@@ -22,7 +22,6 @@ extern cpu_t startClock;
 
 /*use so you don't have to keep repeating this in other methods */
 void contextSwitch(pcb_PTR p){
-	debugE(1, 2, 3, 4);
 	currentProc = p;
 	LDST(&(p->p_s));
 }
@@ -45,7 +44,6 @@ void scheduler(){
 	temp = removeProcQ(&readyQueue);
 
 	if (temp != NULL){
-		debugSchedulerRemovedIsNotNull(1, 2);
 		timer(temp, QUANTUM);
 	}
 
@@ -57,7 +55,7 @@ void scheduler(){
 		if (processCount > 0){
 			if(softBlockCount > 0){
 
-				debugSchedulerOneIsBlocked(1, 2);
+
 
 				currentProc = NULL;
 				/* need to set timer to a very large value */
@@ -76,28 +74,6 @@ void scheduler(){
 }
 
 
-void debugC(int a, int b, int c, int d){
-	a++;
-	b++;
-}
-
-void debugD(int a, int b, int c, int d){
-	a++;
-	b++;
-}
-
-void debugE(int a, int b, int c, int d){
-	a++;
-	b++;
-}
-
-void debugSchedulerRemovedIsNotNull(int a, int b){
-	a++;
-}
-
-void debugSchedulerOneIsBlocked(int a, int b){
-	a++;
-}
 
 
 

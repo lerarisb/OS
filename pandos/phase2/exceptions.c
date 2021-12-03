@@ -24,7 +24,7 @@
 extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
-extern pcb_t*readyQueue;
+extern pcb_t *readyQueue;
 extern cpu_t startClock;
 extern int devSemaphore[SEM4DEV];
 
@@ -35,7 +35,7 @@ void sysHandler(){
 	
 	int lineTest;
 	lineTest = exception_state->s_a0;
-	debugline(lineTest);
+
 
 
 	int isUserON = (currentProc->p_s.s_status & USERON);
@@ -49,7 +49,6 @@ void sysHandler(){
 
 	/*if in user-mode, trigger Program Trap Handler */
 	if (lineTest >= 1 && lineTest <= 8 && isUserON != 0){
-		debugUM(1,2,3,4);
 		PassUpOrDie(GENERALEXCEPT);
 	}
 
@@ -57,7 +56,8 @@ void sysHandler(){
 
 	/* if a0 = 1 */
 	if (lineTest == CREATETHREAD){
-		SYSCALL1();}
+		SYSCALL1();
+	}
 
 	if (lineTest == TERMINATETHREAD){
 		SYSCALL2();
@@ -81,7 +81,8 @@ void sysHandler(){
 
 	/* if a0 = 6 */
 	if (lineTest == GETCPUTIME){
-		SYSCALL6();}
+		SYSCALL6();
+	}
 
 	/* if a0 = 7 */
 	if (lineTest == WAITCLOCK){
@@ -90,11 +91,12 @@ void sysHandler(){
 
 	/* if a0 = 8 */
 	if (lineTest == GETSUPPORTPTR){
-		SYSCALL8();}
+		SYSCALL8();
+	}
 
 	/*if a0 is anything else */
 	else{
-	ProgramTrapHandler(GENERALEXCEPT);
+	PassUpOrDie(GENERALEXCEPT);
 	}
 
 
@@ -119,45 +121,52 @@ void SYSCALL1(){
 		/*check to see if there is a parameter in a2
 		if no parameter provided, set field to null */
 
-		if ((support_t*) currentProc->p_s.s_a2 == NULL){
-			newProc->p_supportStruct = NULL;}
-
+		if ((support_t*) currentProc->p_s.s_a2 != NULL || (support_t*) currentProc->p_s.s_a2 != 0){
+			newProc->p_supportStruct = NULL;
+		}/*
 		else{
-			/*if parameter is provided, set Support Struct equal to parameter */
+			/*if parameter is provided, set Support Struct equal to parameter 
 			newProc->p_supportStruct = (support_t*) currentProc->p_s.s_a2;
-		}
+		}*/
 
-	/*process has yet to accumulate any cpu time */
-	newProc->p_time = 0;
+		/*process has yet to accumulate any cpu time 
+		newProc->p_time = 0;
+	
+		/*this process is in the ready state 
+		newProc->p_semAdd = 0;
 
-	/*this process is in the ready state */
-	newProc->p_semAdd = 0;
+		/*return value of 0 in caller's v0 
+		currentProc->p_s.s_v0 = 0;*/
 
-	/*return value of 0 in caller's v0 */
-	currentProc->p_s.s_v0 = 0;
 
-	/*insert process onto ready queue */
-	insertProcQ(&readyQueue, newProc);
 
-	/*insert newly created process as a child of current process */
-	insertChild(currentProc, newProc);
 
-}
+		currentProc->p_s.s_v0 = READY;
 
-else{
-	/*if there is no room in the pool to create process
-	return -1 in caller's v0
-	and return control to current process */
 
-	currentProc->p_s.s_v0 = -1;
+
+
+		/*insert process onto ready queue */
+		insertProcQ(&readyQueue, newProc);
+
+		/*insert newly created process as a child of current process */
+		insertChild(currentProc, newProc);
+
 	}
+/*
+	else{
+		/*if there is no room in the pool to create process
+			return -1 in caller's v0
+		and return control to current process 
 
-contextSwitch(currentProc);
+		currentProc->p_s.s_v0 = -1;
+	}
+*/
+	contextSwitch(currentProc);
 
 }
 
 void SYSCALL2(){
-	debugSyscall(1, 2, 3, 4);
 	terminateProcess(currentProc);
 	scheduler();
 	}
@@ -168,49 +177,44 @@ void SYSCALL3(){
 
 		
 	
-		/*physical address of semaphore goes in a1*/
-		/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
-
-		/*first, decrement integer*/
-		int *semaphore = (int*) currentProc->p_s.s_a1;
-		(*semaphore)--;
+	/*physical address of semaphore goes in a1*/
+	/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
+	/*first, decrement integer*/
+	int *semaphore = (int*) currentProc->p_s.s_a1;
+	(*semaphore)--;
 
 		
-		/*want to check if semaphore is < 0, assuming it is stored in a1)*/
-		if ((*semaphore) < 0){
+	/*want to check if semaphore is < 0, assuming it is stored in a1)*/
+	if ((*semaphore) < 0){
 
-			/*if it is less than 0, insert current process onto readyQueue and
-			store the time the process took and attribute it to the process in the 
-			p_time field */
+		/*if it is less than 0, insert current process onto readyQueue and
+		store the time the process took and attribute it to the process in the 
+		p_time field */
 			
-			helpBlocking(semaphore);
-
-		}
-
-		else{
-			debugA(1,2,3,4);
-			/*return control to the current process */
-			contextSwitch(currentProc);
-		}
-
+		helpBlocking(semaphore);
 	}
+
+	else{
+		/*return control to the current process */
+		contextSwitch(currentProc);
+	}
+}
 	
 void SYSCALL4(){
 		
-		pcb_t *temp;
+	pcb_t *temp;
 
-		int *semaphore = (int *) currentProc->p_s.s_a1;
-		(*semaphore)++;
+	int *semaphore = (int *) currentProc->p_s.s_a1;
+	(*semaphore)++;
 	
-		if ((*semaphore) <= 0){
-			temp = removeBlocked(semaphore);
-			if (temp != NULL){
-				insertProcQ(&readyQueue, temp);
-			}
+	if ((*semaphore) <= 0){
+		temp = removeBlocked(semaphore);
+		if (temp != NULL){
+			insertProcQ(&readyQueue, temp);
 		}
-		contextSwitch(currentProc);
-	
 	}
+	contextSwitch(currentProc);
+}
 		
 
 void SYSCALL5(){
@@ -225,7 +229,6 @@ void SYSCALL5(){
 
 		int lineNumber = currentProc->p_s.s_a1;
 
-		debugline(lineNumber);
 
 		int deviceNumber = currentProc->p_s.s_a2;
 		int readWrite = currentProc->p_s.s_a3;
@@ -258,8 +261,6 @@ void SYSCALL5(){
 			}
 
 			devSemaphore[i]--;
-			debugSemaphore(devSemaphore[i]);
-
 			
 
 			/*perform P on it */
@@ -267,7 +268,6 @@ void SYSCALL5(){
 			/*check to see if it needs to be blocked*/
 
 			if (devSemaphore[i] < 0){
-				debugNeedToBeBlocked(1, 2, 3, 4);
 				softBlockCount++;
 				helpBlocking(&(devSemaphore[i]));
 			}
@@ -278,6 +278,9 @@ void SYSCALL5(){
 		}
 
 	}
+
+
+
 
 }
 
@@ -383,12 +386,12 @@ void terminateProcess(pcb_t *currentProcess){
 
 		/*check to see if a process actually was removed */
 		if (temp != NULL){
-			int* semaphore = currentProcess->p_semAdd;
+			int *semaphore = temp->p_semAdd;
 
 			/*check to see if the process you are terminating was on the ASL
 			if it was, decrease softBlockCount by 1 */
 
-			if (temp >= &devSemaphore[0] && temp <=&devSemaphore[SEM4DEV - 1]){
+			if (temp >= (&devSemaphore[0]) && temp <= (&devSemaphore[SEM4DEV - 1])){
 				softBlockCount--;
 			}
 
@@ -405,7 +408,9 @@ void terminateProcess(pcb_t *currentProcess){
 
 	/*frees space to go with terminated process */
 	freePcb(currentProcess);
-
+	if (processCount == 0){
+		scheduler();
+	}
 
 }
 
@@ -417,52 +422,3 @@ void helpBlocking(int *semaphore){
 	currentProc = NULL;
 	scheduler();
 }
-
-
-
-
-void debugA(int a, int b, int c, int d){
-	a = 42;
-	b = 21;
-}
-
-void debugUM(int a, int b, int c, int d){
-	a = 42;
-	b = 21;
-}
-
-void debugVerhogen(int a, int b, int c, int d){
-	a = 42;
-	b = 21;
-}
-
-void debugSyscall(int a, int b, int c, int d){
-	a = 42;
-	b = 21;
-}
-
-void debugRegister(state_t *test){
-	int i = 1;
-}
-
-void debugNeedToBeBlocked(int a, int b, int c, int d){
-	a++;
-}
-
-void debugSemaphore(int a){
-	int i = a;
-}
-
-void debugWAITIO(int a, int b, int c, int d){
-	a++;
-}
-
-void debugline(int a){
-	int b = a;
-}
-
-void debugSyscall1(int a, int b, int c, int d){
-	a++;
-}
-
-
