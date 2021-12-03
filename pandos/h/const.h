@@ -15,7 +15,7 @@
 /* timer, timescale, TOD-LO and other bus regs */
 #define RAMBASEADDR		0x10000000
 #define RAMBASESIZE		0x10000004
-#define TODLOADDR		  0x1000001C
+#define TODLOADDR		0x1000001C
 #define INTERVALTMR		0x10000020	
 #define TIMESCALEADDR	0x10000024
 
@@ -28,6 +28,10 @@
 #define INTERRUPT   0
 #define TLBCAUSE    3
 #define SYSCALLHANDLE     8
+
+/*device register constants*/
+#define DEVREG     0x1000054
+#define DEVBITMAP  0x10000040
 
 
 /* utility constants */
@@ -67,6 +71,7 @@
 #define UNINSTALLED		0
 #define READY			    1
 #define BUSY			    3
+#define ERROR           -1
 
 #define PASSUPVECTOR    0x0FFFF900
 #define KERNELSTACK     0x20001000
@@ -132,7 +137,7 @@
 #define WAITCLOCK   7
 #define GETSUPPORTPTR   8
 
-
+/*cause register*/
 #define PLTINTERRUPT 0x00000200 /* PLT interrupt */
 #define TIMERINT 0x00000400 /* clock 2 interrupt */
 #define DISKINTERRUPT 0x00000800  /* disk interrupt */
@@ -141,10 +146,12 @@
 #define PRINTERINTERRUPT 0x00004000  /* printer interrupt */
 #define TERMINTERRUPT 0x00008000  /* terminal interrupt */
 
+/*time related constants */
 #define PSEUDOCLOCKTIME 100000
 #define MAXTIME 0xFFFFFFFF
 #define QUANTUM 5000
 #define IOCLOCK 100000
+
 
 #define IMON    0x0000FF00      /* Interrupt Masked */
 #define IECON   0x00000001      /* Turn interrupts current ON */

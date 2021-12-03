@@ -33,26 +33,21 @@ void sysHandler(){
 
 	state_PTR exception_state = (state_PTR) BIOSDATAPAGE;
 	
-	int lineTest;
-	lineTest = exception_state->s_a0;
-
-
-
-	int isUserON = (currentProc->p_s.s_status & USERON);
+	int lineTest = exception_state->s_a0;
+	int isUserON = (exception_state->s_status & USERON);
 
 	cpu_t current_time;
 	storeState(exception_state, &(currentProc->p_s));
 
 	/*update PC */
-	currentProc->p_s.s_pc += 4;
+	currentProc->p_s.s_pc = currentProc->p_s.s_pc + 4;
 
 
 	/*if in user-mode, trigger Program Trap Handler */
 	if (lineTest >= 1 && lineTest <= 8 && isUserON != 0){
-		PassUpOrDie(GENERALEXCEPT);
+		ProgramTrapHandler();
 	}
 
-	
 
 	/* if a0 = 1 */
 	if (lineTest == CREATETHREAD){
@@ -121,30 +116,15 @@ void SYSCALL1(){
 		/*check to see if there is a parameter in a2
 		if no parameter provided, set field to null */
 
-		if ((support_t*) currentProc->p_s.s_a2 != NULL || (support_t*) currentProc->p_s.s_a2 != 0){
-			newProc->p_supportStruct = NULL;
-		}/*
+
+		if (((support_t*) currentProc->p_s.s_a2 != NULL) || ((support_t*) currentProc->p_s.s_a2 != 0)){
+			newProc->p_supportStruct = (support_t*) currentProc->p_s.s_a2;}
+
 		else{
-			/*if parameter is provided, set Support Struct equal to parameter 
-			newProc->p_supportStruct = (support_t*) currentProc->p_s.s_a2;
-		}*/
-
-		/*process has yet to accumulate any cpu time 
-		newProc->p_time = 0;
-	
-		/*this process is in the ready state 
-		newProc->p_semAdd = 0;
-
-		/*return value of 0 in caller's v0 
-		currentProc->p_s.s_v0 = 0;*/
-
-
-
-
+			newProc->p_supportStruct = NULL;
+		}
+		
 		currentProc->p_s.s_v0 = READY;
-
-
-
 
 		/*insert process onto ready queue */
 		insertProcQ(&readyQueue, newProc);
@@ -153,18 +133,15 @@ void SYSCALL1(){
 		insertChild(currentProc, newProc);
 
 	}
-/*
-	else{
-		/*if there is no room in the pool to create process
-			return -1 in caller's v0
-		and return control to current process 
 
-		currentProc->p_s.s_v0 = -1;
+	else{
+		currentProc->p_s.s_v0 = ERROR;
 	}
-*/
+
 	contextSwitch(currentProc);
 
-}
+	}
+
 
 void SYSCALL2(){
 	terminateProcess(currentProc);
@@ -291,10 +268,11 @@ void SYSCALL5(){
 
 void SYSCALL6(){
 			/* get CPU time and place in v0 */
-	cpu_t current_time;
-	STCK(current_time);
-	current_time = (current_time - startClock) + currentProc->p_time;
-	currentProc->p_s.s_v0 = current_time;
+	cpu_t stopClock;
+	STCK(stopClock);
+	currentProc->p_time = (stopClock - startClock) + currentProc->p_time;
+	currentProc->p_s.s_v0 = currentProc->p_time;
+	STCK(startClock);
 	contextSwitch(currentProc);
 
 	/*do you have to do anything else to timer? */
@@ -312,7 +290,7 @@ void SYSCALL7(){
 			softBlockCount++;
 			helpBlocking(&(devSemaphore[SEM4DEV - 1]));
 		}
-		contextSwitch(currentProc);
+		scheduler();
 	}
 
 void SYSCALL8(){
@@ -320,10 +298,6 @@ void SYSCALL8(){
 		/*returns value of p_support struct */
 		currentProc->p_s.s_v0 = (int) currentProc->p_supportStruct;
 		contextSwitch(currentProc);
-
-		/* not sure we need this 
-		return currentProc->p_s.s_v0;
-		*/
 	}
 
 
@@ -408,9 +382,6 @@ void terminateProcess(pcb_t *currentProcess){
 
 	/*frees space to go with terminated process */
 	freePcb(currentProcess);
-	if (processCount == 0){
-		scheduler();
-	}
 
 }
 

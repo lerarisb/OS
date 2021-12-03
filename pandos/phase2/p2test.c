@@ -408,6 +408,7 @@ void p4() {
 	switch (p4inc) {
 		case 1:
 			print("first incarnation of p4 starts\n");
+			debugp4(1, 2);
 			p4inc++;
 			break;
 		case 2:
@@ -591,6 +592,7 @@ void p6() {
 /*p7 -- program trap without initializing passup vector */
 void p7() {
 	print("p7 starts\n");
+	debugP7(1, 2);
 
 	* ((memaddr *) BADADDR) = 0;
 		
@@ -696,4 +698,12 @@ void p42a(int a, int b, int c, int d){
 void p42b(int a, int b, int c, int d){
 	a= a+2;
 	b= b+2;
+}
+
+void debugP7(int a, int b){
+	a++;
+}
+
+void debugp4(int a, int b){
+	a++;
 }

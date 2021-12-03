@@ -26,52 +26,43 @@ void contextSwitch(pcb_PTR p){
 	LDST(&(p->p_s));
 }
 
-void timer(pcb_PTR currentProc, cpu_t time){
+void timer(pcb_PTR p, cpu_t time){
 	STCK(startClock);
 	setTIMER(time);
-	contextSwitch(currentProc);
+	contextSwitch(p);
 }
 
 /* Uses the round robin algorithm for each process that will be executed */
 void scheduler(){
 
-
-	
-	/* temp variable for the pcb that will be removed */
-	pcb_t *temp;
-
-	/* removes pcb from head of ready queue and stores the pointer in temp */
-	temp = removeProcQ(&readyQueue);
-
-	if (temp != NULL){
-		timer(temp, QUANTUM);
+	if(!emptyProcQ(readyQueue)){
+		setTIMER(QUANTUM);
+		currentProc = removeProcQ(&readyQueue);
+		STCK(startClock);
+		contextSwitch(currentProc);
 	}
 
-	if (processCount == 0){
-		HALT();
-	}
 	else{
+		currentProc = NULL;
 
-		if (processCount > 0){
-			if(softBlockCount > 0){
-
-
-
-				currentProc = NULL;
-				/* need to set timer to a very large value */
-				setTIMER(MAXTIME);
-
-				unsigned int setStatus = (ALLOFF | IECON | IMON | TEBITON);
-				setSTATUS(setStatus);
-				WAIT();
-			}
-			/* there is a deadlock */
-			if(softBlockCount == 0){
+		if ((processCount > 0) && (softBlockCount == 0)){
 				PANIC();
 			}
+
+		else if (processCount ==0){
+			HALT();
+		}
+
+		else{
+			setTIMER(MAXTIME);
+
+			unsigned int setStatus = (ALLOFF | IECON | IMON | TEBITON);
+			setSTATUS(setStatus);
+			WAIT();
 		}
 	}
 }
+
 
 
 

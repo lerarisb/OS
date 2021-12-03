@@ -53,11 +53,14 @@ void interruptHandler(){
 	if((interruptState->s_cause & TIMERINT) != 0){
 
 		pcb_PTR proc;
-       		LDIT(PSEUDOCLOCKTIME);
+        LDIT(PSEUDOCLOCKTIME);
+
         	proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		while(proc != NULL){
             	insertProcQ(&readyQueue, proc);
-           	 	softBlockCount -= 1;
+           	 	cpu_t timeSpent = (proc->p_time) + (stopClock - startClock);
+                proc->p_time = timeSpent;
+                softBlockCount -= 1;
            		proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
        		}
         /* set the semaphore to = 0 */
