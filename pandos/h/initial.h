@@ -10,7 +10,7 @@ extern pcb_t *readyQueue;
 extern int softBlockCount;
 extern int devSemaphore[SEM4DEV];
 
-extern int main();
+extern void main();
 extern void uTLB_RefillHandler();
 extern void genExceptionHandler();
 

@@ -29,7 +29,9 @@ cpu_t startClock;
 /* pseudo clock semaphore */
 	/* one semaphore for each eternal sub device */
 
-int main(){
+/*this works confirmed*/
+
+void main(){
 	
 	
 
@@ -130,9 +132,12 @@ int main(){
 	else{
 		PANIC();
 	}
-	return 0;
 }
 
+
+
+
+/* confirmed works */
 void genExceptionHandler(){
 	
 
