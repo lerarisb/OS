@@ -21,6 +21,7 @@ extern int devSemaphore[SEM4DEV];
 
 HIDDEN void devInterruptH(int devLine);
 HIDDEN int termInterruptH(int *devSem);
+HIDDEN int findDeviceNum(int lineNum);
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
@@ -92,7 +93,7 @@ void interruptHandler(){
         /* terminal dev is on */
         devInterruptH(TERMINT);
     }
-
+/*
     if (currentProc!= NULL){
         currentProc->p_time = currentProc->p_time + (startClock - stopClock);
         storeState(interruptState, &(currentProc->p_s));
@@ -101,18 +102,27 @@ void interruptHandler(){
 
     else{
         HALT();
-    }
+    }*/
+
+
+    STCK(stopClock);
+    currentProc->p_time = currentProc->p_time + (stopClock - startClock);
+    storeState((state_PTR) BIOSDATAPAGE, &(currentProc -> p_s));
+    
+    setTIMER(timeLeft);
+    contextSwitch(currentProc);
+
 
 }
 
 /* interrupt Handler for peripheral devices */
- HIDDEN void devInterruptH(int devLine){
+ HIDDEN void devInterruptH(int lineNum){
     unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
 
     /* getting the dev address */
     deviceRegister = (devregarea_t *) RAMBASEADDR;
-    bitMAP = deviceRegister->interrupt_dev[devLine-DISKINT];
+    bitMAP = deviceRegister->interrupt_dev[lineNum-DISKINT];
     /* interrupt device number */
     int device_number; 
     /* interrupt device semaphore */
@@ -148,10 +158,10 @@ void interruptHandler(){
     }
 	
     /* get device semaphore */
-    device_semaphore = ((devLine - DISKINT) * DEVPERINT) + device_number;
+    device_semaphore = ((lineNum - DISKINT) * DEVPERINT) + device_number;
 	
     /* terminal interrupts */
-    if(devLine == TERMINT){
+    if(lineNum == TERMINT){
         intStatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
 
     /* if not a terminal device interrupt */
@@ -181,6 +191,8 @@ void interruptHandler(){
     if(currentProc == NULL){
         scheduler();
     }
+
+
 }
 
 /* gives device status from terminal read or write case */
@@ -203,6 +215,8 @@ HIDDEN int termInterruptH(int *devSem){
         (*devSem) = (*devSem) + DEVPERINT;
     }
     return(status);
+    
+
 }
 
 /* Go through all the registers in the old state and place them into new state */
@@ -217,4 +231,5 @@ void storeState(state_t *blocked, state_t *ready){
     ready->s_pc = blocked->s_pc;
     ready->s_cause = blocked->s_cause;
 }
+
 

@@ -25,13 +25,13 @@ void contextSwitch(pcb_PTR p){
 	currentProc = p;
 	LDST(&(p->p_s));
 }
-
+/*
 void timer(pcb_PTR p, cpu_t time){
 	STCK(startClock);
 	setTIMER(time);
 	contextSwitch(p);
 }
-
+*/
 /* Uses the round robin algorithm for each process that will be executed */
 void scheduler(){
 

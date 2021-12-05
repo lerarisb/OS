@@ -49,7 +49,7 @@ void sysHandler(){
 	}
 
 
-	/* if a0 = 1 */
+	/* if a0 = 1 *
 	if (lineTest == CREATETHREAD){
 		SYSCALL1();
 	}
@@ -58,41 +58,83 @@ void sysHandler(){
 		SYSCALL2();
 	}
 
-	/* if a0 = 3 , perform P*/
+	/* if a0 = 3 , perform P*
 	if (lineTest == PASSERREN){
 		SYSCALL3();
 	}
 
 	/* if a0 = 4 */
-	/*perform V */
+	/*perform V *
 	if (lineTest == VERHOGEN){
 		SYSCALL4();
 	}
 
-	/* if a0 = 5 */
+	/* if a0 = 5 *
 	if (lineTest == WAITIO){
 		SYSCALL5();
 	}
 
-	/* if a0 = 6 */
+	/* if a0 = 6 *
 	if (lineTest == GETCPUTIME){
 		SYSCALL6();
 	}
 
-	/* if a0 = 7 */
+	/* if a0 = 7 *
 	if (lineTest == WAITCLOCK){
 		SYSCALL7();
 	}
 
-	/* if a0 = 8 */
+	/* if a0 = 8 *
 	if (lineTest == GETSUPPORTPTR){
 		SYSCALL8();
 	}
 
-	/*if a0 is anything else */
+	/*if a0 is anything else *
 	else{
 	PassUpOrDie(GENERALEXCEPT);
 	}
+*/
+
+switch(lineTest){
+		/*SYSCALL1*/
+		case CREATETHREAD:
+			SYSCALL1();
+			break;
+		/*SYSCALL2*/
+		case TERMINATETHREAD:
+			SYSCALL2(currentProc);
+			scheduler();
+			break;
+		/*SYSCALL3*/
+		case PASSERREN:
+			SYSCALL3();
+			break;
+		/*SYSCALL4*/
+		case VERHOGEN:
+			SYSCALL4();
+			break;
+		/*SYSCALL5*/
+		case WAITIO:
+			SYSCALL5();
+			break;
+		/*SYSCALL6*/
+		case GETCPUTIME:
+			SYSCALL6();
+			break;
+		/*SYSCALL7*/
+		case WAITCLOCK:
+			SYSCALL7();
+			break;
+		/*SYSCALL8*/
+		case GETSUPPORTPTR:
+			SYSCALL8();
+			break;
+		/*PASSUPORDIE*/
+		default:
+			ProgramTrapHandler(); 
+	} 
+
+
 
 
 }

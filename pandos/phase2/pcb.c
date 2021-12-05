@@ -220,78 +220,112 @@ void insertChild(pcb_PTR prnt, pcb_PTR p){
 /*given a pointer to a pcb p, remove the first child of p
 removechild returns a pointer to the pcb that was removed*/
 pcb_PTR removeChild(pcb_PTR p){
-    /* store the first child of p for future use */
+    /* store the first child of p for future use *
     pcb_PTR currentChild = p->p_child;
     
     /*test to see if p has child
-    if p has no child, return null*/
+    if p has no child, return null*
     if (currentChild == NULL){
         return NULL;
     }
-    /* if there is only one child of p */
+    /* if there is only one child of p *
     else if (currentChild->p_sib == NULL){
-        /*take the only child and set its parent to null*/
+        /*take the only child and set its parent to null*
         currentChild->p_prnt = NULL; 
-        /*take the parent and set its child to null*/
+        /*take the parent and set its child to null*
         p->p_child = NULL;
         return currentChild;
     }
-    /*if p has more than one child*/
+    /*if p has more than one child*
     else{
         
-        /* set p's child to point to the current child's sibling */
+        /* set p's child to point to the current child's sibling *
         p->p_child = currentChild->p_sib;
         
-        /* set parent and sibling of current child to null */
+        /* set parent and sibling of current child to null *
         currentChild->p_prnt = NULL;
         currentChild->p_sib = NULL;
         
-        /* set prevSib of new child to be null */
+        /* set prevSib of new child to be null *
         p->p_child->p_prevSib = NULL;
 
         return currentChild;
-    }   
+    }   */
+
+
+if (emptyChild(p)){
+        return (NULL);
+    }
+    /*one child exists*/
+    else {
+        pcb_PTR temp = p -> p_child;
+        /*checks if there is a sibling - if not only child*/
+        if (p-> p_child -> p_sib == (NULL)){
+            /*child is removed and set as null*/
+            p -> p_child = (NULL);
+            temp -> p_prnt = (NULL);
+            temp -> p_sib = (NULL);
+            temp -> p_prevSib = (NULL);
+            return (temp);}
+        /*more than one child*/
+        else{
+            /*the child is removed and p now points at the sibling*/
+            p -> p_child = p -> p_child -> p_sib;
+            /*there is no longer a previous sibling*/
+            p -> p_child -> p_prevSib = (NULL);
+            p -> p_prnt = (NULL);
+            p -> p_sib = (NULL);
+            p -> p_prevSib = (NULL);
+            return (temp);}
+    }
+
+
+
+
+
+
+
 }
 
 /*given a pointer p to a child pcb, this removes p
 this returns a pointer to the pcb that was just removed */
 pcb_PTR outChild(pcb_PTR p){
-   /*store parent of p for further use */
+   /*store parent of p for further use *
     pcb_PTR parent = p->p_prnt;
     if (p == NULL){
         return NULL;
     }
-    /*check to see if p is actually a child and has an existing parent*/
+    /*check to see if p is actually a child and has an existing parent*
     if (parent == NULL){
         return NULL;
     }
-    /* if p is the only child of its parent */
+    /* if p is the only child of its parent *
     if(p == parent->p_child && p->p_sib == NULL && p->p_prevSib == NULL){
-        /* set child of parent to null */
+        /* set child of parent to null *
         parent->p_child = NULL;
-        /* set parent of p to null */
+        /* set parent of p to null *
         parent = NULL;
         return p;
     }
-    /* if p is the first child of its parent*/
+    /* if p is the first child of its parent*
     if(p == parent->p_child){
         
-        /* set new first child to be the old second Child */
+        /* set new first child to be the old second Child *
         parent->p_child = p->p_sib;
         
-        /* change the old head pointers so that its sib and prevSib are null */
+        /* change the old head pointers so that its sib and prevSib are null *
         p->p_sib = NULL;
         p->p_sib->p_prevSib = NULL;
         
-        /* set the parent of the removed child to be null */
+        /* set the parent of the removed child to be null *
         parent = NULL;
         
         return p;
     }
-    /* check to see if p is the last child by seeing if its previous sibling is null */ 
+    /* check to see if p is the last child by seeing if its previous sibling is null *
     if(p->p_sib == NULL){
         /* remove p by setting its prevSib and parent to be null
-        make it so that p's previous sib does not point to p*/
+        make it so that p's previous sib does not point to p*
         p->p_prevSib->p_sib = NULL;
         p->p_prevSib = NULL;
         parent = NULL;
@@ -302,18 +336,67 @@ pcb_PTR outChild(pcb_PTR p){
         
         return p;
     }
-    /* if p is a child but not the first child */
+    /* if p is a child but not the first child *
     if (p->p_prevSib != NULL && p->p_sib != NULL){
-        /* set it so that p's previous sibling and p's next sibling point to eachother and not p */
+        /* set it so that p's previous sibling and p's next sibling point to eachother and not p *
         p->p_sib->p_prevSib = p->p_prevSib;
         p->p_prevSib->p_sib = p->p_sib;
         
-        /* set the parent, and both siblings of p to null */
+        /* set the parent, and both siblings of p to null *
         parent = NULL;
         p->p_sib = NULL;
         p->p_prevSib = NULL;
         
         return p;
     }
-    return NULL;
+    return NULL;*/
+
+
+if (p -> p_prnt == NULL) {
+        return (NULL);
+    }
+    
+    else {
+        /*parent exists and one child*/
+        if((p->p_sib == NULL) && (p -> p_prevSib == NULL)){
+            /*the pointer to the parent is now null*/
+            p -> p_prnt = NULL;
+            /*the pointer from the parent to the child is now null*/
+            p -> p_prnt -> p_child = NULL;
+            /*there should now be no more children*/
+            return p;
+        }
+            
+        /*parent exists and child has siblings on each side*/
+        else if((p->p_sib != NULL) && (p ->p_prevSib != NULL)){
+            /*the childs previous sibling pointing at it goes around it to p's next sibling*/
+            p -> p_prevSib -> p_sib = p -> p_sib;
+            /*now the childs sibling its pointing to goes around it to p's previous sibling*/
+            p -> p_sib -> p_prevSib = p -> p_prevSib;
+            p -> p_sib = p -> p_prnt = p -> p_prevSib = NULL;
+            return p;
+        }
+        
+        /*parent exists and child has siblings but is first child*/
+        else if ((p->p_sib != NULL) && ((p -> p_prevSib) == NULL)){
+            /*have the parent now pointing at the sibling*/
+            p -> p_prnt -> p_child = p -> p_sib;
+            /*delete the sibling pointing back toward the child*/
+            /*p -> p_sib -> p_sibPrev = NULL; */
+            p -> p_sib = p -> p_prnt = p -> p_prevSib = NULL;
+            return p;
+        }
+        
+        /*parent exists and child has siblings but is last child*/
+        else{
+            /*the previous sibling who is pointing at p which is the sibling gets nulled*/
+            p -> p_prevSib -> p_sib = NULL;
+            p -> p_prnt = p -> p_prevSib= NULL;
+            return p;
+        }
+    }
+
+
+
+    
 }

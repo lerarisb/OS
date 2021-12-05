@@ -20,7 +20,7 @@ typedef struct {
 	unsigned int d_command;
 	unsigned int d_data0;
 	unsigned int d_data1;
-} device_t;
+} device_t, *device_PTR;
 
 #define t_recv_status		d_status
 #define t_recv_command		d_command
@@ -60,7 +60,7 @@ typedef struct semd_t {
 	struct semd_t *s_next;
 	int *s_semAdd;
 	pcb_t *s_procQ;
-} semd_t;
+} semd_t, *semd_PTR;
 
 /* Bus Register Area */
 typedef struct {
@@ -78,7 +78,7 @@ typedef struct {
 	unsigned int inst_dev[DEVINTNUM];
 	unsigned int interrupt_dev[DEVINTNUM];
 	device_t	devreg[DEVINTNUM * DEVPERINT];
-} devregarea_t;
+} devregarea_t, *devregarea_PTR;
 
 
 /* Pass Up Vector */
