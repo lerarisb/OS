@@ -1,3 +1,21 @@
+/*
+asl.c maintains a sorted NULL-terminated single, linearly linked list (using the field s_next) of semaphore descriptors whose head 
+is pointed by the variable semd_h.  The list semd_h points to represents the Active Semaphore List (ASL), which is sorted in ascending
+order using the s_semdAdd field as the sort key.
+
+this file also maintains a second list lof semaphore descriptors, the semdFree list, to hold the unused semaphore descriptors.  
+This list, whose head is pointed to by the variable semdFree_h.  The free list is kept, like the pcbFree list, 
+as a NULL-terminated single, linearly linked list (using the s_next field).
+
+the semaphore descriptors are declared as a static array of size MAXPROC + 2 of type semd_t.  
+The array has 2 dummy nodes, one at the beginning and one at the end
+
+this file supports the insert, removal, and initizalization of the ASL through the following externally visible functions;
+insertBlocked, removeBlocked, outBlocked, headBlocked, and initASL
+
+the file also contains helper functions called helpTraverse and freeSmd
+*/
+
 #include "../h/const.h"
 #include "../h/types.h"
 #include "../h/pcb.h"
