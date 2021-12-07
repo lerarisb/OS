@@ -105,7 +105,7 @@ void interruptHandler(){
     int deviceNumber; 
     /* interrupt device semaphore */
     int deviceSemaphore;
-    /* register status of the interrupting device */
+    /* register status for the interrupting device */
     unsigned int intStatus; 
     pcb_t *p;
 
@@ -135,15 +135,15 @@ void interruptHandler(){
         deviceNumber = 7;
     }
 	
-    /* get device semaphore */
+    /* get the devices semaphore */
     deviceSemaphore = ((lineNum - DISKINT) * DEVPERINT) + deviceNumber;
 	
     /* terminal interrupts */
     if(lineNum == TERMINT){
-        intStatus = termInterruptH(&deviceSemaphore); /* call function for handling terminal interrupts */
+        intStatus = termInterruptH(&deviceSemaphore); 
 
-    /* if it is not a terminal device interrupt */
     }
+    /* if it is not a terminal device interrupt */
     else{
         intStatus = ((deviceRegister->devreg[deviceSemaphore]).d_status);
         /* ACK the interrupt */
@@ -153,15 +153,15 @@ void interruptHandler(){
     /* V operation on the device semaphore */
     devSemaphore[deviceSemaphore]++;
 
-    /* if already waited for i/o */
+    /* check if it is already waiting for i/o */
     if(devSemaphore[deviceSemaphore] <= 0) {
         p = removeBlocked(&(devSemaphore[deviceSemaphore]));
         if (p != NULL) {
 	    /* save status */
             p->p_s.s_v0 = intStatus;
-	    /* insert process onto the ready queue */
+	    /* insert the process onto the ready queue */
             insertProcQ(&readyQueue, p);
-	    /* update SBC*/
+	    /* update SBC */
             softBlockCount -= 1; 
         }
     }
