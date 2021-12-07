@@ -1,3 +1,24 @@
+/*nucleus initalization */
+
+/*written by Ben Leraris and Cole Shelgren */
+
+/*this is the entry point for pandos that performs nucleus initalizaiton */
+/*this file contains and initalizes the following global variables
+	an integer for the number of started but not terminated processes
+	an integer for the number of blocked processes
+	tail pointer to a ready queue containing pcbs that are ready
+	pointer to the pcb that is currently executing
+	semaphores for each device stored in an array
+	the value the time of day clock started at 
+	the semaphore for the pseudo clock
+this file also populates the pass up vector
+it initalizes pcb and asl data structure by calling initPcb and initSemd
+laods the system wide interval timer with 100 ms
+instantiates a single process, places it in the readyQueue, and increments process count
+finally, calls the scheduler
+
+*/
+
 #include "../h/const.h"
 #include "../h/types.h"
 #include "../h/pcb.h"
@@ -16,33 +37,40 @@ extern void uTLB_RefillHandler();
 /* nucleus initalization */
 
 /* declare global variables */
-
+/*
+an integer for the number of started but not terminated processes*/
 int processCount;
+
+/*pointer to the pcb that is currently executing*/
 pcb_t *currentProc;
+
+/*tail pointer to a ready queue containing pcbs that are ready*/
 pcb_t *readyQueue;
+
+/*an integer for the number of blocked processes*/
 int softBlockCount;
+
+/*semaphroes for each device stored in an array*/
 int devSemaphore[SEM4DEV];
+
+/*the value the time of day clock started at */
 cpu_t startClock;
 
+/*he semaphore for the pseudo clock*/
 #define clockSem devSemaphore[SEM4DEV - 1]
-
-/* pseudo clock semaphore */
-	/* one semaphore for each eternal sub device */
-
-/*this works confirmed*/
 
 void main(){
 	
 	
-
+	/* initalize pcbs and asl */
 	initPcbs();
 	initASL();
 	
 	
-
-	passupvector_t *passUp = (passupvector_t*) PASSUPVECTOR;
 	/*populate Processor 0 Pass Up Vector*/
+	passupvector_t *passUp = (passupvector_t*) PASSUPVECTOR;
 	
+	/*set address of the refull handler */
 	passUp->tlb_refll_handler = (memaddr) uTLB_RefillHandler;
 
 	/*set stack pointer ofr Nucleus TLB-Refill event 
@@ -62,12 +90,19 @@ void main(){
 	passUp->exception_stackPtr = (memaddr) KERNELSTACK;
 
 
-
-
+	/*no processes running */
 	processCount = 0;
+
+	/*no processes blocked */
 	softBlockCount = 0;
+
+	/*no processes on readyQueue */
 	readyQueue = mkEmptyProcQ();
+
+	/*no currently running process */
 	currentProc = NULL;
+
+	/*local variable */
 	pcb_t *p;
 
 	/*set device semaphores to 0*/
@@ -83,6 +118,7 @@ void main(){
 	/*load system wide Interval timer with 100 ms */
 	LDIT(PSEUDOCLOCKTIME);
 
+	/*create speace for currently running process */
 	p = allocPcb();
 	
 	if (p != NULL){
@@ -106,46 +142,29 @@ void main(){
 		p->p_s.s_status = (ALLOFF | IECON | IMON | TEBITON);
 	
 
-		
+		/*increement process count*/
 		processCount++;
+
+		/*add to ready Queue */
 		insertProcQ(&readyQueue, p);
-
-
-
-		/*accumulated time field to 0*/
-		/* p->p_time = 0; */
-
-		/*set blocking semaphore address to NULL*/
-		/* p->p_semAdd = NULL; */
-
-	
-
-
 
 		/*call the scheduler*/
 		scheduler();
-
-	
-
-	
 	}
 	else{
 		PANIC();
 	}
 }
 
+/*responsible for determining cause of exception and sending to according file */
 
-
-
-/* confirmed works */
 void genExceptionHandler(){
 	
-
-
+	/*local variable for old state */
 	state_PTR oldState;
-	int exceptReason;
 
-	
+	/*local variable for except reason */
+	int exceptReason;
 
 	/*or bits together to determine cause*/
 	oldState = (state_PTR) BIOSDATAPAGE;

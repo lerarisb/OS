@@ -1,12 +1,18 @@
 /* Exceptions */
 
-/*for exception code 0, go to Device interrupt handler*/
+/*Written by Ben Leraris and Cole Shelgren */
 
-/*for exception code 1-3, go to TLB exception handler*/
+/*this file contains methods to deal with syscall exceptions 
+if you wake up here, the original exception code was 8
 
-/*for codes 4-7 or 9-12, go to Program Trap exception handler*/
+/*When the syscall assembly instruction is executed, the code enters the syscall handler below.
+the syshandler determines the specific exception code and corresponding syscall method that needs to be called
+the exception code is placed in the general purpose registers by the executing process 
+there are different syscall methods for values 1-8 and any other values will go to the pass up or die method
+there are also one helper method that helps terminate a process and all of its children 
+and another helper method that helps block a process on the readyQueue */
 
-/*for code 8, go to syscall exception handler*/
+/*this file references all global variables from initial */
 
 
 #include "../h/const.h"
@@ -30,13 +36,15 @@ extern int devSemaphore[SEM4DEV];
 
 void sysHandler(){
 
-
+	/*saves exception state */
 	state_PTR exception_state = (state_PTR) BIOSDATAPAGE;
 	
 	int lineTest = exception_state->s_a0;
 	int isUserON = (exception_state->s_status & USERON);
 
 	cpu_t current_time;
+
+	/*store current state*/
 	storeState(exception_state, &(currentProc->p_s));
 
 	/*update PC */
@@ -49,7 +57,7 @@ void sysHandler(){
 	}
 
 
-	/* if a0 = 1 *
+	/* if a0 = 1 */
 	if (lineTest == CREATETHREAD){
 		SYSCALL1();
 	}
@@ -58,91 +66,50 @@ void sysHandler(){
 		SYSCALL2();
 	}
 
-	/* if a0 = 3 , perform P*
+	/* if a0 = 3 , perform P*/
 	if (lineTest == PASSERREN){
 		SYSCALL3();
 	}
 
 	/* if a0 = 4 */
-	/*perform V *
+	/*perform V */
 	if (lineTest == VERHOGEN){
 		SYSCALL4();
 	}
 
-	/* if a0 = 5 *
+	/* if a0 = 5 */
 	if (lineTest == WAITIO){
 		SYSCALL5();
 	}
 
-	/* if a0 = 6 *
+	/* if a0 = 6 */
 	if (lineTest == GETCPUTIME){
 		SYSCALL6();
 	}
 
-	/* if a0 = 7 *
+	/* if a0 = 7 */
 	if (lineTest == WAITCLOCK){
 		SYSCALL7();
 	}
 
-	/* if a0 = 8 *
+	/* if a0 = 8 */
 	if (lineTest == GETSUPPORTPTR){
 		SYSCALL8();
 	}
 
-	/*if a0 is anything else *
+	/*if a0 is anything else */
 	else{
 	PassUpOrDie(GENERALEXCEPT);
 	}
-*/
-
-switch(lineTest){
-		/*SYSCALL1*/
-		case CREATETHREAD:
-			SYSCALL1();
-			break;
-		/*SYSCALL2*/
-		case TERMINATETHREAD:
-			SYSCALL2(currentProc);
-			scheduler();
-			break;
-		/*SYSCALL3*/
-		case PASSERREN:
-			SYSCALL3();
-			break;
-		/*SYSCALL4*/
-		case VERHOGEN:
-			SYSCALL4();
-			break;
-		/*SYSCALL5*/
-		case WAITIO:
-			SYSCALL5();
-			break;
-		/*SYSCALL6*/
-		case GETCPUTIME:
-			SYSCALL6();
-			break;
-		/*SYSCALL7*/
-		case WAITCLOCK:
-			SYSCALL7();
-			break;
-		/*SYSCALL8*/
-		case GETSUPPORTPTR:
-			SYSCALL8();
-			break;
-		/*PASSUPORDIE*/
-		default:
-			ProgramTrapHandler(); 
-	} 
-
-
-
-
 }
 
 
+
+
 void SYSCALL1(){
-	
 	/*create new process */
+
+	/*make space for new process */
 	pcb_t *newProc = allocPcb();
 
 
@@ -186,6 +153,7 @@ void SYSCALL1(){
 
 
 void SYSCALL2(){
+	/*terminate a process and all of its children */
 	terminateProcess(currentProc);
 	scheduler();
 	}
@@ -193,9 +161,9 @@ void SYSCALL2(){
 
 	
 void SYSCALL3(){
+	/*wait method */
+	/*uses semaphores for mutual exclusions */
 
-		
-	
 	/*physical address of semaphore goes in a1*/
 	/* depending on value of semaphor, control is either returned to the current Process or process is blocked on ASL */
 	/*first, decrement integer*/
@@ -220,6 +188,9 @@ void SYSCALL3(){
 }
 	
 void SYSCALL4(){
+
+	/*go method*/
+	/*uses sempahores for multual exclusion */
 		
 	pcb_t *temp;
 
@@ -237,7 +208,9 @@ void SYSCALL4(){
 		
 
 void SYSCALL5(){
-		/* transitions from running to blocked state*/
+	/*wait for IO */
+	/* transitions from running to blocked state*/
+		
 		/*performs P on semaphore that nucleus maintains by values in a1, a2 and a3*/
 		/*blocks current Process on ASL*/
 		/*a1 is line # */
@@ -279,9 +252,9 @@ void SYSCALL5(){
 
 			}
 
-			devSemaphore[i]--;
-			
+			/*decrement semaphore */
 
+			devSemaphore[i]--;
 			/*perform P on it */
 
 			/*check to see if it needs to be blocked*/
@@ -295,29 +268,25 @@ void SYSCALL5(){
 			/*if it does not need to be blocked, load new state and go */
 			contextSwitch(currentProc);	
 		}
-
 	}
-
-
-
-
 }
 
-		
-		
-	
-	
 
 void SYSCALL6(){
-			/* get CPU time and place in v0 */
+	/* get CPU time and place in v0 */
+
 	cpu_t stopClock;
 	STCK(stopClock);
+
+	/*charges time to current process */
 	currentProc->p_time = (stopClock - startClock) + currentProc->p_time;
 	currentProc->p_s.s_v0 = currentProc->p_time;
-	STCK(startClock);
-	contextSwitch(currentProc);
 
-	/*do you have to do anything else to timer? */
+	/*starts clock again */
+	STCK(startClock);
+
+	/*returns control to executing process */
+	contextSwitch(currentProc);
 
 	}
 
@@ -343,20 +312,21 @@ void SYSCALL8(){
 	}
 
 
-
+/*occurs when uMPS3 fails in an attempt to translate a logical address into a corresponding address */
 void TLBHandler(){
 	PassUpOrDie(PGFAULTEXCEPT);
 }
 
+/*occurs when current process attempts to perform illegal or undefine action */
 void ProgramTrapHandler(){
 	PassUpOrDie(GENERALEXCEPT);
 }
 
+/*used when the exception is not 1-8 */
 void PassUpOrDie(int exception){
 	if (currentProc->p_supportStruct != NULL){
 		
 		/*store the saved exception state */
-		 
 		storeState((state_t*) BIOSDATAPAGE, &(currentProc->p_supportStruct->sup_exceptState[exception]));
 		
 		/*pass control to the Nucleus Exception Handler, which we set the address of in initial */
@@ -365,6 +335,9 @@ void PassUpOrDie(int exception){
 		currentProc->p_supportStruct->sup_exceptContext[exception].c_pc);
 
 	}
+
+	/*kills the executing process and all of its children */
+
 	terminateProcess(currentProc);
 	scheduler();
 
@@ -373,6 +346,8 @@ void PassUpOrDie(int exception){
 
 
 
+/*helper process for sys 2 
+recursively terminates a given processes children and its children and so on */
 
 void terminateProcess(pcb_t *currentProcess){
 	
@@ -426,7 +401,7 @@ void terminateProcess(pcb_t *currentProcess){
 	freePcb(currentProcess);
 
 }
-
+/*helper method to block a process with a given semaphore */
 void helpBlocking(int *semaphore){
 	cpu_t TOD_stop;
 	STCK(TOD_stop);

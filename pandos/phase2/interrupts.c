@@ -1,5 +1,17 @@
 /* interrupts */
 
+/*written by Ben Leraris and Cole Shelgren */
+
+/*interrupt occurs when a prveiously initated I/O request completes or when a timer makes an according transition
+there are two types of interrupts - timer and devices
+there are two types of timer interrupts - pseudo clock interrupts and processor local timer ones
+this file contains an interrupt handler which determines what type the interryupt is, which interrupt lines have pending interrupts and which device per interrupt line
+the interrupt is occuring on
+terminal devices are treated as two subdevices
+when there are multiple interrupts, the interrupt on the lowest line is given highest priority
+there are methods for when the interrupt is a pseudo clock, processor local timer, non-terminal device, or device interrupts
+there is also a helper method called store state that goes through all the registers in the old state and place them into new state  */
+
 #include "../h/const.h"
 #include "../h/types.h"
 #include "../h/pcb.h"
@@ -25,51 +37,27 @@ HIDDEN int findDeviceNum(int lineNum);
 
 /* Determines interrupt with the highest priority and passes control to the scheduler */
 void interruptHandler(){
-	cpu_t stopClock;
-	cpu_t timeLeft;
-
+	
+    /*stop clock and get value */
+    cpu_t stopClock;
     STCK(stopClock);
+
+    /*local variable */
+	cpu_t timeLeft;
 	timeLeft = getTIMER();
 	
+    /*interrupt state */
     state_PTR interruptState = (state_PTR)BIOSDATAPAGE;
 
 	/* PLT interrupt, means it is time to switch to next process */
 	if(((interruptState->s_cause) & PLTINTERRUPT) != 0){
-		if(currentProc != NULL){
-			/* get time of current process */
-			currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
-			/* store processor state */
-			storeState((state_PTR) BIOSDATAPAGE, &(currentProc->p_s));
-			/* add proccess back to the readyQueue */
-			insertProcQ(&readyQueue, currentProc);
-			/* call scheduler to switch to next process */
-			scheduler();
-		}
-		/* if there isn't a currentProc */
-		else{
-			PANIC();
-		}
+		Pltinterrupt();
 	}
+
 	/* pseudo clock tick interrupt */
 	if((interruptState->s_cause & TIMERINT) != 0){
-
-		pcb_PTR proc;
-        LDIT(PSEUDOCLOCKTIME);
-
-        	proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
-       		while(proc != NULL){
-            	insertProcQ(&readyQueue, proc);
-           	 	cpu_t timeSpent = (proc->p_time) + (stopClock - startClock);
-                proc->p_time = timeSpent;
-                softBlockCount -= 1;
-           		proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
-       		}
-        /* set the semaphore to = 0 */
-       		devSemaphore[SEM4DEV - 1] = 0; 
-        	if(currentProc == NULL){
-            	scheduler();
-        	}
-	}
+        PctInterrupt();
+    }
 
 	/* if it is not a PLT or pseudo clock interrupt and therefore a device interrupt */
 
@@ -93,24 +81,19 @@ void interruptHandler(){
         /* terminal dev is on */
         devInterruptH(TERMINT);
     }
-/*
+
+/*update state and time of currentProc if not null */
     if (currentProc!= NULL){
         currentProc->p_time = currentProc->p_time + (startClock - stopClock);
         storeState(interruptState, &(currentProc->p_s));
         timer(currentProc, timeLeft);
+        contextSwitch(currentProc);
     }
 
+/*error*/
     else{
         HALT();
-    }*/
-
-
-    STCK(stopClock);
-    currentProc->p_time = currentProc->p_time + (stopClock - startClock);
-    storeState((state_PTR) BIOSDATAPAGE, &(currentProc -> p_s));
-    
-    setTIMER(timeLeft);
-    contextSwitch(currentProc);
+    }
 
 
 }
@@ -219,6 +202,7 @@ HIDDEN int termInterruptH(int *devSem){
 
 }
 
+/*helper method */
 /* Go through all the registers in the old state and place them into new state */
 void storeState(state_t *blocked, state_t *ready){
     int i;
@@ -231,5 +215,55 @@ void storeState(state_t *blocked, state_t *ready){
     ready->s_pc = blocked->s_pc;
     ready->s_cause = blocked->s_cause;
 }
+
+/*use for PLT interrupt */
+void Pltinterrupt(){
+    cpu_t stopClock;
+    STCK(stopClock);
+    if(currentProc != NULL){
+            /* get time of current process */
+            currentProc->p_time = (currentProc->p_time) + (stopClock - startClock);
+            /* store processor state */
+            storeState((state_PTR) BIOSDATAPAGE, &(currentProc->p_s));
+            /* add proccess back to the readyQueue */
+            insertProcQ(&readyQueue, currentProc);
+            /* call scheduler to switch to next process */
+            scheduler();
+        }
+        /* if there isn't a currentProc */
+    else{
+        PANIC();
+    }
+}
+
+/*used for pseudo clock timer interrupt */
+void PctInterrupt(){
+    cpu_t stopClock;
+    STCK(stopClock);
+    pcb_PTR proc;
+
+        /*load time to max time */
+        LDIT(PSEUDOCLOCKTIME);
+
+        /*wake up any processes that went to sleep on this semaphore */
+            proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
+            while(proc != NULL){
+                insertProcQ(&readyQueue, proc);
+
+                /*update the time charged to that process */
+                cpu_t timeSpent = (proc->p_time) + (stopClock - startClock);
+                proc->p_time = timeSpent;
+
+                /*update soft block count */
+                softBlockCount -= 1;
+                proc = removeBlocked(&devSemaphore[SEM4DEV - 1]); 
+            }
+        /* set the semaphore to = 0 */
+            devSemaphore[SEM4DEV - 1] = 0; 
+            if(currentProc == NULL){
+                scheduler();
+            }
+    }
+
 
 
