@@ -63,22 +63,18 @@ void interruptHandler(){
 
 	/* disk interrupt */
     if((interruptState->s_cause & DISKINTERRUPT) != 0){
-        /* disk dev is on */
         devInterruptH(DISKINT);
     }
     /* flash interrupt */
     if((interruptState->s_cause & FLASHINTERRUPT) != 0){
-        /* flash dev is on */
         devInterruptH(FLASHINT);
     }
     /* printer interrupt */
     if((interruptState->s_cause & PRINTERINTERRUPT) != 0) {
-        /* printer dev is on */
         devInterruptH(PRNTINT);
     }
     /* terminal interrupt */
     if(((interruptState->s_cause) & TERMINTERRUPT) != 0) {
-        /* terminal dev is on */
         devInterruptH(TERMINT);
     }
 
@@ -100,71 +96,70 @@ void interruptHandler(){
 
 /* interrupt Handler for peripheral devices */
  HIDDEN void devInterruptH(int lineNum){
+    /* gettind device address */
     unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
-
-    /* getting the dev address */
     deviceRegister = (devregarea_t *) RAMBASEADDR;
     bitMAP = deviceRegister->interrupt_dev[lineNum-DISKINT];
     /* interrupt device number */
-    int device_number; 
+    int deviceNumber; 
     /* interrupt device semaphore */
-    int device_semaphore;
+    int deviceSemaphore;
     /* register status of the interrupting device */
     unsigned int intStatus; 
     pcb_t *p;
 
     /* determine which device number is causing an interrupt */
     if((bitMAP & DEV0) != 0){
-        device_number = 0;
+        deviceNumber = 0;
     }
     else if((bitMAP & DEV1) != 0){
-        device_number = 1;
+        deviceNumber = 1;
     }
     else if((bitMAP & DEV2) != 0){
-        device_number = 2;
+        deviceNumber = 2;
     }
     else if((bitMAP & DEV3) != 0){
-        device_number = 3;
+        deviceNumber = 3;
     }
     else if((bitMAP & DEV4) != 0){
-        device_number = 4;
+        deviceNumber = 4;
     }
     else if((bitMAP & DEV5) != 0){
-        device_number = 5;
+        deviceNumber = 5;
     }
     else if((bitMAP & DEV6) != 0){
-        device_number = 6;
+        deviceNumber = 6;
     }
     else{
-        device_number = 7;
+        deviceNumber = 7;
     }
 	
     /* get device semaphore */
-    device_semaphore = ((lineNum - DISKINT) * DEVPERINT) + device_number;
+    deviceSemaphore = ((lineNum - DISKINT) * DEVPERINT) + deviceNumber;
 	
     /* terminal interrupts */
     if(lineNum == TERMINT){
-        intStatus = termInterruptH(&device_semaphore); /* call function for handling terminal interrupts */
+        intStatus = termInterruptH(&deviceSemaphore); /* call function for handling terminal interrupts */
 
-    /* if not a terminal device interrupt */
+    /* if it is not a terminal device interrupt */
     }
     else{
-        intStatus = ((deviceRegister->devreg[device_semaphore]).d_status);
+        intStatus = ((deviceRegister->devreg[deviceSemaphore]).d_status);
         /* ACK the interrupt */
-        (deviceRegister->devreg[device_semaphore]).d_command = ACK;
+        (deviceRegister->devreg[deviceSemaphore]).d_command = ACK;
     }
 
     /* V operation on the device semaphore */
-    devSemaphore[device_semaphore]++;
+    devSemaphore[deviceSemaphore]++;
 
     /* if already waited for i/o */
-    if(devSemaphore[device_semaphore] <= 0) {
-        p = removeBlocked(&(devSemaphore[device_semaphore]));
+    if(devSemaphore[deviceSemaphore] <= 0) {
+        p = removeBlocked(&(devSemaphore[deviceSemaphore]));
         if (p != NULL) {
 	    /* save status */
             p->p_s.s_v0 = intStatus;
-	    /* insert the process onto the ready queue */
+	    /* insert process onto the ready queue */
             insertProcQ(&readyQueue, p);
 	    /* update SBC*/
             softBlockCount -= 1; 
@@ -184,13 +179,13 @@ HIDDEN int termInterruptH(int *devSem){
     unsigned int status;
     deviceRegister = (devregarea_t *) RAMBASEADDR;
 
-    /* terminal write case takes priority over terminal read case */
+    /* write case takes priority over read case */
     if ((deviceRegister->devreg[(*devSem)].t_transm_status & 0x0F) != READY) { /* handle write casse */
         status = deviceRegister->devreg[(*devSem)].t_transm_status;
         deviceRegister->devreg[(*devSem)].t_transm_command = ACK;
 
     }
-    /* handle read case if not write case */
+    /* read case */
     else{ 
         status = deviceRegister->devreg[(*devSem)].t_recv_status;
         deviceRegister->devreg[(*devSem)].t_recv_command = ACK;
