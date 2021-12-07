@@ -1,8 +1,6 @@
 #include "../h/const.h"
 #include "../h/types.h"
 #include "../h/pcb.h"
-/* #include "../h/asl.h" */
-/* #include "../phase1/pcb.c" */
 #include <limits.h>
 
 semd_t *semdFree_h; 
