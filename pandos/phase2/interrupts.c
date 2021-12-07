@@ -158,11 +158,11 @@ and performs v on appropriate device semaphore */
     if(devSemaphore[deviceSemaphore] <= 0) {
         p = removeBlocked(&(devSemaphore[deviceSemaphore]));
         if (p != NULL) {
-	    /* save status */
+	    /* saves the register status */
             p->p_s.s_v0 = intStatus;
-	    /* insert the process onto the ready queue */
+	    /* inserts the process onto the readyQueue */
             insertProcQ(&readyQueue, p);
-	    /* update SBC */
+	    /* updates the softBlockCount */
             softBlockCount -= 1; 
         }
     }
