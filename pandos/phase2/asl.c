@@ -73,101 +73,70 @@ if(semd == NULL){
 
 /* initialize the semdFree list */
 void initASL(){
-	/* initialize the semdTable *
+	/* initialize the semdTable */
 	static semd_t semdTable[MAXPROC+2];
 	semd_h = NULL;
-	semdFree_h = NULL;
+	semdFree_h = &semdTable[0];
 	int i;
-	/* fill the table excluding the two dummy nodes *
-	for(i=2; i < (MAXPROC+2); i++){
-		freeSemd(&(semdTable[i]));
-	}	
-	/* initializing the two dummy nodes *
-	semd_t *dumb;
-	dumb = &(semdTable[0]);
-	semd_t *dumber;
-	dumber = &(semdTable[1]);	
-	/* making dumb the first dummy node *
-	dumb->s_semAdd = 0;
-    dumb->s_procQ = NULL;
-    dumb->s_next = dumber;
-    /*make first dummy node the head *
-    semd_h = dumb;   	
-    /* making dumber the last dummy node *
-    dumber->s_semAdd = (INT_MAX); 
-    dumber->s_procQ = NULL;
-    dumber->s_next = NULL;*/
-
-static semd_t semdTable[MAXPROC+2]; /* two additional for dummies */
-	semdFree_h = &semdTable[0]; /* free list ptr to add of first */
-	int i = 0;
-	/* goes through semdTable and sets up pointers (sets previous's next to it) */
-	while (i < MAXPROC - 1){
+	
+	/* fill the table excluding the two dummy nodes */
+	for(i=0; i < (MAXPROC+2); i++){
 		semdTable[i].s_next = &semdTable[i+1];
-		i++;
-	}
-	semdTable[MAXPROC-1].s_next = NULL; /* last */
-	
-	/*setting up dummy node*/
-	semd_h = &semdTable[MAXPROC];
-	semd_h -> s_semAdd = 0;
-	semd_h -> s_procQ = mkEmptyProcQ();
-	
-	semd_h -> s_next = &semdTable[MAXPROC + 1];
-	
-	semd_h -> s_next -> s_semAdd = NULL;
-	semd_h -> s_next -> s_procQ = mkEmptyProcQ();
-	semd_h -> s_next -> s_next = NULL;
+	}	
 
+	/* initializing the two dummy nodes */
+	semd_t *dumb;
+	semd_t *dumber;
+
+	/* making dumber the last dummy node */
+
+	dumber = &(semdTable[MAXPROC+1]);
+    dumber->s_semAdd = NULL; 
+    dumber->s_procQ = mkEmptyProcQ();
+    dumber->s_next = NULL;
+
+/*making dumb the first dummy node */
+	dumb = &(semdTable[MAXPROC]);
+	dumb->s_semAdd = 0;
+    dumb->s_procQ = mkEmptyProcQ();
+    dumb->s_next = dumber;
+
+    /*make first dummy node the head */
+    semd_h = dumb; 
+	
+	
 
 
 }
-
-/*helper function to allocate active semaphor*/
-/*remove a semaphor from free list*/
-/*return newly removed semaphor*
-semd_t* allocSemd(){
-	/*check to see if free list is null*
-	if (semdFree_h == NULL){
-		return NULL;
-	}
-	/* deallocate space from free to ASL *
-	semd_t *currentHead = semdFree_h;
-	semdFree_h = currentHead->s_next;
-	return currentHead;
-}
-
-*/
-
 
 
 /*helper function to allocate active semaphor*/
 /*remove a semaphor from free list*/
 /*return newly removed semaphor*/
-semd_t* allocSemd(semd_PTR sem, int *semAdd){
+semd_t* allocSemd(semd_PTR s, int *semAdd){
 	/*check to see if free list is null*/
 	if (semdFree_h == NULL){
 		return NULL;
 	}
-	/* deallocate space from free to ASL *
+	/* deallocate space from free to ASL */
+	
 	semd_t *currentHead = semdFree_h;
-	semdFree_h = currentHead->s_next;
-	return currentHead;*/
-semd_PTR temp;
-	temp = semdFree_h;
-	semdFree_h = semdFree_h -> s_next;
-	temp -> s_next = sem -> s_next;
-	sem -> s_next = temp;
-	temp -> s_procQ = mkEmptyProcQ();
-	temp -> s_semAdd =  semAdd;
-	return temp;
 
+	/*removing by setting head equal to the next free semaphore */
+	semdFree_h = semdFree_h->s_next;
 
+	/*remove given semaphore by setting pointers to go around it */
+	currentHead->s_next = s->s_next;
+	s-> s_next = currentHead;
+
+	/*emptying processes of current head */
+	currentHead->s_procQ = mkEmptyProcQ();
+
+	/*setting semaphore equal to the given int */
+	currentHead-> s_semAdd = semAdd;
+
+	return currentHead;
 }
-
-
-
-
 
 
 /* insert pcb point to by p at tail end of semaphore address pointed to 
