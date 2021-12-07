@@ -35,7 +35,7 @@ HIDDEN void devInterruptH(int devLine);
 HIDDEN int termInterruptH(int *devSem);
 HIDDEN int findDeviceNum(int lineNum);
 
-/* Determines interrupt with the highest priority and passes control to the scheduler */
+/*determines the cause of interrupt and passes to appropraite method */
 void interruptHandler(){
 	
     /*stop clock and get value */
@@ -49,12 +49,12 @@ void interruptHandler(){
     /*interrupt state */
     state_PTR interruptState = (state_PTR)BIOSDATAPAGE;
 
-	/* PLT interrupt, means it is time to switch to next process */
+	/* cause was a PLT interrupt*/
 	if(((interruptState->s_cause) & PLTINTERRUPT) != 0){
 		Pltinterrupt();
 	}
 
-	/* pseudo clock tick interrupt */
+	/* cause was a pseudo clock tick interrupt */
 	if((interruptState->s_cause & TIMERINT) != 0){
         PctInterrupt();
     }
@@ -94,18 +94,19 @@ void interruptHandler(){
 
 }
 
-/* interrupt Handler for peripheral devices */
+/* method for device interrupts that determines device numbers
+and performs v on appropriate device semaphore */
  HIDDEN void devInterruptH(int lineNum){
     /* gettind device address */
     unsigned int bitMAP;
     volatile devregarea_t *deviceRegister;
     deviceRegister = (devregarea_t *) RAMBASEADDR;
     bitMAP = deviceRegister->interrupt_dev[lineNum-DISKINT];
-    /* interrupt device number */
+    /* local variable interrupt device number */
     int deviceNumber; 
-    /* interrupt device semaphore */
+    /* local variable interrupt device semaphore */
     int deviceSemaphore;
-    /* register status for the interrupting device */
+    /* local variable register status for the interrupting device */
     unsigned int intStatus; 
     pcb_t *p;
 
@@ -138,7 +139,7 @@ void interruptHandler(){
     /* get the devices semaphore */
     deviceSemaphore = ((lineNum - DISKINT) * DEVPERINT) + deviceNumber;
 	
-    /* terminal interrupts */
+    /* use for terminal interrupts because terminal really has two sub devices */
     if(lineNum == TERMINT){
         intStatus = termInterruptH(&deviceSemaphore); 
 
@@ -150,7 +151,7 @@ void interruptHandler(){
         (deviceRegister->devreg[deviceSemaphore]).d_command = ACK;
     }
 
-    /* V operation on the device semaphore */
+    /* perform V on device semaphore */
     devSemaphore[deviceSemaphore]++;
 
     /* check if it is already waiting for i/o */
@@ -165,7 +166,7 @@ void interruptHandler(){
             softBlockCount -= 1; 
         }
     }
-    /* if no process is running, call the scheduler */
+    /* if no process is currently running, call the scheduler to choose next one */
     if(currentProc == NULL){
         scheduler();
     }
@@ -173,7 +174,8 @@ void interruptHandler(){
 
 }
 
-/* gives device status from terminal read or write case */
+/* used when terminal interrupt  to update status and acknowledge interrupt
+terminal can be in write or in read */
 HIDDEN int termInterruptH(int *devSem){
 	volatile devregarea_t *deviceRegister;
     unsigned int status;
@@ -198,7 +200,8 @@ HIDDEN int termInterruptH(int *devSem){
 }
 
 /*helper method */
-/* Go through all the registers in the old state and place them into new state */
+/* given an old state and a new state, this loops through all the registers in the old state 
+and places them into the same registers but in the new state */
 void storeState(state_t *blocked, state_t *ready){
     int i;
     for (i = 0; i < STATEREGNUM; i++){
