@@ -18,7 +18,7 @@ The other method helps resent the timer */
 #include "../h/scheduler.h"
 #include "/usr/include/umps3/umps/libumps.h"
 
-/* Variables used from initial.c */
+/* global variables */
 extern int processCount;
 extern int softBlockCount;
 extern pcb_t *currentProc;
