@@ -181,13 +181,13 @@ HIDDEN int termInterruptH(int *devSem){
     unsigned int status;
     deviceRegister = (devregarea_t *) RAMBASEADDR;
 
-    /* write case takes priority over read case */
+    /* if terminal is in write */
     if ((deviceRegister->devreg[(*devSem)].t_transm_status & 0x0F) != READY) { /* handle write casse */
         status = deviceRegister->devreg[(*devSem)].t_transm_status;
         deviceRegister->devreg[(*devSem)].t_transm_command = ACK;
 
     }
-    /* read case */
+    /* if terminal is in read */
     else{ 
         status = deviceRegister->devreg[(*devSem)].t_recv_status;
         deviceRegister->devreg[(*devSem)].t_recv_command = ACK;
